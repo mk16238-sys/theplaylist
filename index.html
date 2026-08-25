@@ -1192,7 +1192,7 @@
       sections.forEach(m => {
         const received = m.items.filter(x => x.received).length;
         html += `<div style="margin-bottom:22px">
-          <div style="font-size:16px;font-weight:700;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #4A3F35">${escapeHtml(m.name)} · 库存 ${m.stock} · 已登记 ${m.items.length} · 待派发 ${m.stock - received}</div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #4A3F35">${escapeHtml(m.name)}</div>
           <table style="width:100%;border-collapse:collapse;font-size:13px">
             <thead><tr style="background:rgba(201,168,124,0.18)">
               <th style="border:1px solid #D8D2C2;padding:8px;width:50px;white-space:nowrap">序号</th>
@@ -1289,10 +1289,18 @@
     function showPreviewToSave(canvas) {
       const overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;';
-      overlay.innerHTML = '<div style="color:#fff;font-size:14px;line-height:1.6;margin-bottom:12px;text-align:center">已生成图片 👇<br>长按图片可保存到相册</div>' +
-        '<img alt="长按保存" style="max-width:100%;max-height:76vh;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5)">' +
-        '<button style="margin-top:16px;padding:10px 30px;border:none;border-radius:999px;background:#fff;color:#222;font-size:15px;font-weight:600">关闭</button>';
-      overlay.querySelector('img').src = canvas.toDataURL('image/png');
+      overlay.innerHTML = '<div style="color:#fff;font-size:14px;line-height:1.6;margin-bottom:12px;text-align:center">已生成图片 👇<br><b>长按图片</b>即可保存到相册</div>' +
+        '<img alt="长按保存" style="max-width:100%;max-height:76vh;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default">' +
+        '<button style="margin-top:16px;padding:10px 30px;border:none;border-radius:999px;background:#fff;color:#222;font-size:15px;font-weight:600">关 闭</button>';
+      const img = overlay.querySelector('img');
+      // 优先用 Blob URL（比 data URL 更小，微信长按保存更稳定）
+      if (canvas.toBlob) {
+        canvas.toBlob(blob => {
+          img.src = blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/png');
+        }, 'image/png');
+      } else {
+        img.src = canvas.toDataURL('image/png');
+      }
       overlay.querySelector('button').addEventListener('click', () => overlay.remove());
       overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
       document.body.appendChild(overlay);

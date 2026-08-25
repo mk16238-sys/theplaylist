@@ -1243,16 +1243,60 @@
         logging: false
       }).then(canvas => {
         if (holder.parentNode) document.body.removeChild(holder);
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        showToast('已保存到下载');
+        saveCanvasImage(canvas, filename);
       }).catch(err => {
         if (holder.parentNode) document.body.removeChild(holder);
         console.error(err);
         showToast('保存失败，请重试');
       });
+    }
+
+    // ===== Save image (mobile-friendly) =====
+    function saveCanvasImage(canvas, filename) {
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+      if (isMobile) {
+        // 移动端：优先调起系统分享面板（iOS Safari / 安卓 Chrome 可「存储图像」进相册）
+        if (navigator.canShare && navigator.share && canvas.toBlob) {
+          canvas.toBlob(blob => {
+            if (!blob) { showPreviewToSave(canvas); return; }
+            const file = new File([blob], filename, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              navigator.share({ files: [file], title: filename }).then(() => {
+                showToast('已生成');
+              }).catch(err => {
+                if (err && err.name === 'AbortError') return; // 用户取消
+                showPreviewToSave(canvas);
+              });
+            } else {
+              showPreviewToSave(canvas);
+            }
+          }, 'image/png');
+          return;
+        }
+        // 移动端但不支持分享（如微信）：全屏预览 + 长按保存
+        showPreviewToSave(canvas);
+        return;
+      }
+      // 桌面浏览器：直接触发下载
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('已保存到下载');
+    }
+
+    // 全屏预览 + 长按保存（针对微信等禁止网页下载的环境）
+    function showPreviewToSave(canvas) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;';
+      overlay.innerHTML = '<div style="color:#fff;font-size:14px;line-height:1.6;margin-bottom:12px;text-align:center">已生成图片 👇<br>长按图片可保存到相册</div>' +
+        '<img alt="长按保存" style="max-width:100%;max-height:76vh;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5)">' +
+        '<button style="margin-top:16px;padding:10px 30px;border:none;border-radius:999px;background:#fff;color:#222;font-size:15px;font-weight:600">关闭</button>';
+      overlay.querySelector('img').src = canvas.toDataURL('image/png');
+      overlay.querySelector('button').addEventListener('click', () => overlay.remove());
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+      showToast('长按图片保存');
     }
 
     // ===== Notes save as image (with TIPS header) =====

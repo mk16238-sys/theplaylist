@@ -1,0 +1,18 @@
+{
+  "name": "Nabi 嘉年华 · 物料登记",
+  "short_name": "Nabi 嘉年华",
+  "description": "欧阳娜娜嘉年华演唱会现场物料领取登记与互换 Tips",
+  "start_url": "./Nabi嘉年华.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#DFDCCF",
+  "theme_color": "#DFDCCF",
+  "icons": [
+    {
+      "src": "图标.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

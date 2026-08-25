@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Nabi 嘉年华">
+  <meta name="theme-color" content="#DFDCCF">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="图标.png">
+  <link rel="icon" type="image/png" href="图标.png">
+  <title>Nabi 嘉年华 · 物料登记</title>
+  <script src="html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #DFDCCF;
+      --bg-soft: #F1EEE9;
+      --panel: #FAF7F1;
+      --ink: #4A3F35;
+      --muted: #8C7E6B;
+      --line: #D8D2C2;
+      --accent: #C9A87C;
+      --accent-dark: #A6885E;
+      --check: #7FA86B;
+      --danger: #C76B6B;
+      --radius: 18px;
+      --shadow: 0 4px 20px rgba(74, 63, 53, 0.08);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.5;
+      font-size: 16px;
+      padding-bottom: 110px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ===== Top header banner (The Playlist) ===== */
+    .app-header {
+      width: 100%;
+      background: var(--bg);
+      padding: 20px 16px 16px;
+      text-align: center;
+    }
+    .app-header .header-art {
+      width: 100%;
+      max-width: 720px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .app-header .owner-id {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      letter-spacing: 1px;
+    }
+
+    /* ===== View router ===== */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 0 14px; }
+
+    /* ===== Top nav row (left entry / right actions) ===== */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0 6px;
+    }
+    .nav-btn {
+      border: 1.5px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+    }
+    .nav-btn:active { transform: scale(0.96); }
+    .nav-btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .nav-spacer { flex: 1; }
+
+    .register-panel {
+      background: var(--bg-soft);
+      min-height: calc(100vh - 60px);
+      padding-bottom: 24px;
+    }
+
+    /* ===== Tabs ===== */
+    .sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--bg-soft);
+      margin: 0 -14px;
+      padding: 4px 14px 10px;
+      box-shadow: 0 4px 14px rgba(74, 63, 53, 0.05);
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px 0 8px;
+      margin: 0 -4px;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      flex: 0 0 auto;
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: var(--bg-soft);
+      border: 1.5px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: none;
+    }
+    .tab.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+
+    /* ===== Stats (data summary — non-button style) ===== */
+    .stats {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 0;
+      margin: 10px 0 0;
+      padding: 8px 4px 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .stat-item {
+      flex: 1;
+      text-align: center;
+      padding: 0 4px;
+      position: relative;
+    }
+    .stat-item + .stat-item::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 18%;
+      height: 64%;
+      width: 1px;
+      background: var(--line);
+    }
+    .stat-item .num {
+      display: block;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .stat-item.warn .num { color: var(--danger); }
+    .stat-item .label { font-size: 12px; }
+
+    /* ===== Data table ===== */
+    .data-list {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--panel);
+    }
+    .data-head {
+      display: grid;
+      grid-template-columns: 40px 36px 1.4fr 1fr 36px;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 8px;
+      background: rgba(201, 168, 124, 0.18);
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .data-head span { text-align: center; }
+    .data-head .dh-id, .data-head .dh-ex { text-align: left; padding-left: 4px; }
+
+    .data-item {
+      display: grid;
+      grid-template-columns: 40px 36px 1.4fr 1fr 36px;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 8px;
+      background: transparent;
+      border-bottom: 1px solid rgba(74, 63, 53, 0.08);
+      transition: opacity .15s;
+    }
+    .data-item:last-child { border-bottom: none; }
+    .data-item.received { opacity: 0.55; }
+    .data-item.received .di-id,
+    .data-item.received .di-ex { text-decoration: line-through; }
+
+    .di-check {
+      width: 22px; height: 22px;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: #fff;
+      margin: 0 auto;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .di-check.checked {
+      background: var(--check);
+      border-color: var(--check);
+      color: #fff;
+    }
+    .di-check.checked::after {
+      content: "✓";
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .di-index {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .di-id {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 2px 4px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .di-ex {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 2px 4px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .di-id:focus, .di-ex:focus {
+      background: rgba(201, 168, 124, 0.18);
+      outline: none;
+    }
+    .di-del {
+      width: 28px; height: 28px;
+      border: none;
+      background: transparent;
+      color: var(--danger);
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 8px;
+      margin: 0 auto;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .di-del:active { background: #fff0f0; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--muted);
+      font-size: 14px;
+      background: rgba(255,255,255,0.35);
+      border: 1.5px dashed rgba(74, 63, 53, 0.12);
+      border-radius: 16px;
+    }
+
+    /* ===== Search ===== */
+    .search-box {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      border: 1.5px solid var(--line);
+      border-radius: 999px;
+      background: var(--bg-soft);
+      color: var(--ink);
+      font-size: 14px;
+      outline: none;
+    }
+    .search-box::before {
+      content: "🔍";
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      opacity: 0.6;
+    }
+
+    /* ===== FAB ===== */
+    .fab {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(74, 63, 53, 0.3);
+      z-index: 60;
+      cursor: pointer;
+    }
+    .fab:active { transform: translateX(-50%) scale(0.96); }
+    .fab.secondary { background: var(--accent); }
+
+    /* ===== Bottom sheet ===== */
+    .sheet-overlay {
+      position: fixed; inset: 0;
+      background: rgba(74, 63, 53, 0.45);
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s ease;
+      z-index: 110;
+    }
+    .sheet-overlay.show { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      background: var(--panel);
+      border-top-left-radius: 22px;
+      border-top-right-radius: 22px;
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
+      padding: 18px 18px calc(22px + env(safe-area-inset-bottom));
+      z-index: 120;
+      transform: translateY(100%);
+      transition: transform .28s ease;
+    }
+    .sheet.show { transform: translateY(0); }
+    .sheet h3 { margin: 0 0 14px; font-size: 17px; }
+    .sheet label { display: block; font-size: 13px; color: var(--muted); margin: 10px 4px 6px; }
+    .sheet input {
+      width: 100%;
+      padding: 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      font-size: 16px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+    .sheet input:focus { border-color: var(--accent); }
+    .sheet .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+    .sheet .btn { flex: 1; padding: 14px; font-size: 15px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; }
+    .sheet .btn-primary { background: var(--accent); color: #fff; }
+    .sheet .btn-secondary { background: var(--bg); color: var(--ink); }
+    .sheet .btn-danger { background: var(--danger); color: #fff; }
+
+    /* ===== Modal ===== */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(74, 63, 53, 0.45);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 200;
+      padding: 16px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--panel);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+    .modal-header {
+      padding: 16px 18px;
+      border-bottom: 1.5px solid var(--line);
+      font-weight: 700;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-body { padding: 16px 18px; overflow-y: auto; }
+    .modal-footer { padding: 12px 18px 18px; display: flex; gap: 10px; justify-content: flex-end; }
+    .close-x { background: none; border: none; font-size: 22px; color: var(--muted); cursor: pointer; }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 5px;
+      box-shadow: var(--shadow);
+      transition: transform .1s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--panel); color: var(--ink); border: 1.5px solid var(--line); }
+    .btn-danger { background: #fff0f0; color: var(--danger); border: 1.5px solid #f0d0d0; }
+    .btn-ink { background: var(--ink); color: #fff; }
+
+    .tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .tools-grid .btn { flex-direction: column; padding: 14px 8px; font-size: 13px; gap: 6px; }
+    .tools-grid .btn span { font-size: 22px; }
+
+    textarea.import-area {
+      width: 100%;
+      min-height: 160px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      font-family: monospace;
+      resize: vertical;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 90px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+      z-index: 300;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ===== Notes view (互换物料 Tips) ===== */
+    .notes-wrap { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+    .notes-h1 {
+      text-align: center;
+      font-size: 24px;
+      letter-spacing: 2px;
+      margin: 22px 0 14px;
+      font-weight: 700;
+    }
+    .notes-h2 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 22px 0 10px;
+      letter-spacing: 1px;
+    }
+    .notes-materials {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .notes-mat-card {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 8px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .notes-mat-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .notes-mat-card span { font-size: 13px; color: var(--muted); }
+
+    .notes-divider { border: none; margin: 22px 0; }
+
+    .notes-list { list-style: none; padding: 0; margin: 0; }
+    .notes-list li {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .notes-list .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+      background: var(--ink);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .notes-list .title { font-weight: 700; font-size: 16px; }
+    .notes-list p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+    .notes-list .inline-img {
+      width: 100%;
+      max-width: 140px;
+      border-radius: 12px;
+      margin: 10px auto 4px;
+      display: block;
+    }
+    .notes-list .caption {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 4px 0 6px;
+    }
+
+    .notes-tips {
+      background: rgba(201, 168, 124, 0.15);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--muted);
+      margin: 18px 0;
+    }
+    .notes-tips strong { color: var(--ink); }
+
+    /* location horizontal layout (text left, image right) */
+    .loc-row {
+      display: flex;
+      gap: 14px;
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .loc-row .loc-text {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .loc-row .loc-text .title { font-weight: 700; font-size: 16px; }
+    .loc-row .loc-text .title .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+      background: var(--ink);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .loc-row .loc-text p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+    .loc-row .loc-img-wrap {
+      flex: 0 0 110px;
+      width: 110px;
+      text-align: center;
+    }
+    .loc-row .loc-img {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .loc-row .loc-caption {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ootd horizontal layout (text left, image right) */
+    .ootd-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 14px;
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+    .ootd-row .ootd-img {
+      width: 30%;
+      max-width: 90px;
+      flex: 0 0 30%;
+      border-radius: 12px;
+      display: block;
+      object-fit: cover;
+    }
+    .ootd-row .ootd-text {
+      flex: 1 1 0;
+      min-width: 0;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+    .ootd-row .ootd-text strong { color: var(--ink); font-size: 15px; }
+    .notes-footer {
+      background: var(--ink);
+      color: #fff;
+      text-align: center;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 10px;
+    }
+
+    [contenteditable="true"] {
+      outline: none;
+      border-radius: 6px;
+      transition: background .2s;
+    }
+    [contenteditable="true"]:hover { background: rgba(201, 168, 124, 0.12); }
+    [contenteditable="true"]:focus { background: rgba(201, 168, 124, 0.22); }
+
+    /* ===== Export area (hidden, for image render) ===== */
+    .hidden-export {
+      position: fixed;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -1;
+      width: 520px;
+      background: var(--bg);
+    }
+
+    @media (max-width: 420px) {
+      .tab { padding: 8px 13px; font-size: 13px; }
+      .nav-btn { padding: 7px 12px; font-size: 12px; }
+      .notes-materials { gap: 8px; }
+      .notes-mat-card { padding: 6px; }
+      .notes-mat-card span { font-size: 12px; }
+      .di-id { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Registration View ===== -->
+  <section class="view active" id="viewRegister">
+    <div class="app-header">
+      <img src="页面表头2.png" alt="The Playlist · Nana's Carnival" class="header-art">
+    </div>
+
+    <div class="register-panel">
+      <div class="container">
+        <div class="top-nav">
+          <button class="nav-btn" onclick="switchView('notes')">查看互换 Tips</button>
+          <div class="nav-spacer"></div>
+          <button class="nav-btn" onclick="openExportSheet()">生成长图</button>
+          <button class="nav-btn" onclick="openToolsMenu()">工具箱</button>
+        </div>
+
+        <div class="sticky-top">
+          <nav class="tabs" id="tabs"></nav>
+          <div class="search-box" style="margin: 4px 0 4px;">
+            <input type="text" id="searchInput" placeholder="搜索小红书ID…" oninput="renderRows()">
+          </div>
+          <div class="stats" id="stats"></div>
+        </div>
+
+        <div class="data-list" id="rows"></div>
+      </div>
+    </div>
+
+    <button class="fab" onclick="openAddSheet()">+ 添加记录</button>
+  </section>
+
+  <!-- ===== Notes View ===== -->
+  <section class="view" id="viewNotes">
+    <div class="app-header" id="notesHeaderArt" style="padding: 12px 0 0;">
+      <img src="TIPS备份.png" alt="The Playlist · 互换物料 Tips" class="header-art" style="max-width: 720px;">
+    </div>
+
+    <div class="top-nav" style="max-width: 520px; margin: 0 auto; padding: 10px 16px 0;">
+      <button class="nav-btn" onclick="switchView('register')">← 返回登记</button>
+      <div class="nav-spacer"></div>
+      <button class="nav-btn primary" onclick="saveNotesAsImage()">生成长图</button>
+    </div>
+
+    <div class="notes-wrap" id="captureArea">
+      <h2 class="notes-h2" contenteditable="true">物料：</h2>
+      <div class="notes-materials">
+        <div class="notes-mat-card">
+          <img src="a5c834d328c619e7d25489a5145eaf36.jpg" alt="清凉油">
+          <span contenteditable="true">清凉油</span>
+        </div>
+        <div class="notes-mat-card">
+          <img src="打卡批.jpg" alt="打卡牌">
+          <span contenteditable="true">打卡牌</span>
+        </div>
+        <div class="notes-mat-card">
+          <img src="冰箱贴.jpg" alt="冰箱贴">
+          <span contenteditable="true">冰箱贴</span>
+        </div>
+      </div>
+
+      <hr class="notes-divider">
+
+      <h2 class="notes-h2" contenteditable="true">物料互换注意事项：</h2>
+      <ul class="notes-list">
+        <li>
+          <div class="title"><span class="num">1</span><span contenteditable="true">互换时间：16:30 开始</span></div>
+          <p contenteditable="true">15:30 我开始入场进行周边采购，随身物品较多，该时间段不进行常规互换；路上偶遇识别出 ootd 可以例外进行交换。</p>
+        </li>
+      </ul>
+
+      <div class="loc-row">
+        <div class="loc-text">
+          <div class="title"><span class="num">2</span><span contenteditable="true">互换地点：集市中心雕塑</span></div>
+          <p contenteditable="true">如果现场该地点人流过多，可能会临时更换地点，请随时查看群消息～</p>
+        </div>
+        <div class="loc-img-wrap">
+          <img src="位图.png" alt="互换地点" class="loc-img">
+          <div class="loc-caption" contenteditable="true">正对嘉年华入口方向</div>
+        </div>
+      </div>
+
+      <ul class="notes-list">
+        <li>
+          <div class="title"><span class="num">3</span><span contenteditable="true">互换规则：见面请先提供小红书 ID</span></div>
+          <p contenteditable="true">碰面请第一时间提供您的小红书 id，待我核对记录表后进行互换；没有告知 id 的情况下暂不进行互换。</p>
+        </li>
+      </ul>
+
+      <h2 class="notes-h2" contenteditable="true">当日OOTD</h2>
+      <div class="ootd-row">
+        <div class="ootd-text" contenteditable="true">
+          <strong>当日OOTD💪</strong><br>
+          <strong>Tips：</strong>如果现场人太多挤散，可以约定退场之后场外再互换；现场嘈杂听不清，可以简单打字沟通。遇到强行索要、纠缠的人，可以直接礼貌拒绝，不用不好意思。确认<br>
+          ① 一对一交换物料
+        </div>
+        <img src="编组.png" alt="ootd" class="ootd-img">
+      </div>
+
+      <div class="notes-footer" contenteditable="true">
+        请各位互换的宝宝提前将本图保存，方便现场互换顺利～
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===== Shared sheets / modals ===== -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeAddSheet()"></div>
+  <div class="sheet" id="sheet">
+    <h3 id="sheetTitle">添加记录</h3>
+    <label>小红书ID</label>
+    <input type="text" id="sheetId" placeholder="例如：欧阳娜娜最爱的33" autocomplete="off">
+    <label>互换物</label>
+    <input type="text" id="sheetExchange" placeholder="例如：记忆盒子" autocomplete="off"
+      onkeydown="if(event.key==='Enter'){confirmAddSheet()}">
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeAddSheet()">取消</button>
+      <button class="btn btn-primary" onclick="confirmAddSheet()">确认添加</button>
+    </div>
+  </div>
+
+  <div class="sheet-overlay" id="exportSheetOverlay" onclick="closeExportSheet()"></div>
+  <div class="sheet" id="exportSheet">
+    <h3>生成长图</h3>
+    <div class="btn-row" style="flex-direction:column; gap:10px;">
+      <button class="btn btn-primary" onclick="closeExportSheet();captureCurrent();">当前表格长图</button>
+      <button class="btn btn-secondary" onclick="closeExportSheet();captureAll();">全部表格长图</button>
+    </div>
+  </div>
+
+  <div class="sheet-overlay" id="deleteSheetOverlay" onclick="closeDeleteSheet()"></div>
+  <div class="sheet" id="deleteSheet">
+    <h3>确认删除</h3>
+    <p id="deleteSheetText" style="margin:0 0 10px; color:var(--muted);">是否删除这条记录？</p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeDeleteSheet()">取消</button>
+      <button class="btn btn-danger" id="deleteSheetConfirm">删除</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span id="modalTitle">操作</span>
+        <button class="close-x" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <div id="exportHidden" class="hidden-export"></div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ================= View switching =================
+    function switchView(name) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(name === 'register' ? 'viewRegister' : 'viewNotes').classList.add('active');
+      window.scrollTo(0, 0);
+      if (name === 'register') render();
+    }
+
+    // ================= State =================
+    const STORAGE_KEY = 'nabiMaterialRegistry_v2';
+    const DEFAULT_MATERIALS = [
+      { name: '清凉油',         stock: 50 },
+      { name: '打卡牌',         stock: 25 },
+      { name: '冰箱贴-小鹿包', stock: 5 },
+      { name: '冰箱贴-嘉年华蛋挞', stock: 5 },
+    ];
+
+    let state = loadState();
+    let activeIndex = 0;
+    let pendingDeleteIdx = -1;
+    let pendingBatchDelete = false;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          parsed.materials.forEach(m => { if (typeof m.stock !== 'number') m.stock = 0; });
+          return parsed;
+        }
+      } catch (e) { console.error(e); }
+      return { materials: DEFAULT_MATERIALS.map(m => ({ name: m.name, stock: m.stock, items: [] })) };
+    }
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function getFilteredItems() {
+      const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      return state.materials[activeIndex].items
+        .map((it, idx) => ({ ...it, originalIndex: idx }))
+        .filter(it => !q || it.id.toLowerCase().includes(q) || it.exchange.toLowerCase().includes(q));
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById('tabs');
+      tabs.innerHTML = state.materials.map((m, i) => `
+        <button class="tab ${i === activeIndex ? 'active' : ''}" onclick="switchTab(${i})">${escapeHtml(m.name)}</button>
+      `).join('');
+    }
+
+    function renderStats() {
+      const m = state.materials[activeIndex];
+      const registered = m.items.length;
+      const received = m.items.filter(x => x.received).length;
+      const canExchange = m.stock - registered;
+      const pending = m.stock - received;
+      document.getElementById('stats').innerHTML = `
+        <div class="stat-item${canExchange < 0 ? ' warn' : ''}">
+          <span class="num">${m.stock}</span>
+          <span class="label">总库存</span>
+        </div>
+        <div class="stat-item">
+          <span class="num">${registered}</span>
+          <span class="label">已登记</span>
+        </div>
+        <div class="stat-item${canExchange < 0 ? ' warn' : ''}">
+          <span class="num">${canExchange}</span>
+          <span class="label">可换</span>
+        </div>
+        <div class="stat-item${pending < 0 ? ' warn' : ''}">
+          <span class="num">${pending}</span>
+          <span class="label">待派发</span>
+        </div>
+      `;
+    }
+
+    function renderRows() {
+      const list = getFilteredItems();
+      const rows = document.getElementById('rows');
+      const headHTML = `
+        <div class="data-head">
+          <span class="dh-check">领取</span>
+          <span class="dh-index">#</span>
+          <span class="dh-id">小红书ID</span>
+          <span class="dh-ex">互换物</span>
+          <span class="dh-del"></span>
+        </div>
+      `;
+      if (!list.length) {
+        rows.innerHTML = `<div class="empty-state">暂无记录，点击底部「添加记录」开始登记</div>`;
+        return;
+      }
+      rows.innerHTML = headHTML + list.map((it, i) => `
+        <div class="data-item ${it.received ? 'received' : ''}">
+          <div class="di-check ${it.received ? 'checked' : ''}" data-idx="${it.originalIndex}"></div>
+          <div class="di-index">${i + 1}</div>
+          <div class="di-id" contenteditable="true" data-idx="${it.originalIndex}" data-field="id">${escapeHtml(it.id)}</div>
+          <div class="di-ex" contenteditable="true" data-idx="${it.originalIndex}" data-field="exchange">${escapeHtml(it.exchange)}</div>
+          <button class="di-del" data-idx="${it.originalIndex}">×</button>
+        </div>
+      `).join('');
+
+      // Bind events via delegation to keep delete/checks responsive after re-render
+      rows.querySelectorAll('.di-check').forEach(el => {
+        el.addEventListener('click', () => {
+          toggleReceived(parseInt(el.dataset.idx, 10));
+        });
+      });
+      rows.querySelectorAll('.di-del').forEach(el => {
+        el.addEventListener('click', () => {
+          askDelete(parseInt(el.dataset.idx, 10));
+        });
+      });
+      rows.querySelectorAll('.di-id, .di-ex').forEach(el => {
+        el.addEventListener('focus', () => {
+          el.dataset.original = el.textContent;
+        });
+        el.addEventListener('blur', () => {
+          const idx = parseInt(el.dataset.idx, 10);
+          const field = el.dataset.field;
+          const original = el.dataset.original || '';
+          let value = el.textContent.trim().replace(/\s+/g, ' ');
+          if (!value) {
+            el.textContent = original;
+            return;
+          }
+          if (value !== original) {
+            state.materials[activeIndex].items[idx][field] = value;
+            saveState();
+            el.dataset.original = value;
+            showToast('已更新');
+          }
+        });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+          if (e.key === 'Escape') {
+            el.textContent = el.dataset.original || '';
+            el.blur();
+          }
+        });
+      });
+    }
+
+    function render() {
+      renderTabs();
+      renderStats();
+      renderRows();
+    }
+
+    function switchTab(i) {
+      activeIndex = i;
+      document.getElementById('searchInput').value = '';
+      render();
+    }
+
+    function pushItem(id, exchange) {
+      id = (id || '').trim();
+      exchange = (exchange || '').trim();
+      if (!id || !exchange) return false;
+      state.materials[activeIndex].items.push({ id, exchange, received: false });
+      saveState();
+      render();
+      return true;
+    }
+
+    // ===== Add sheet =====
+    function openAddSheet() {
+      document.getElementById('sheetTitle').textContent = '添加记录 · ' + state.materials[activeIndex].name;
+      document.getElementById('sheetId').value = '';
+      document.getElementById('sheetExchange').value = '';
+      document.getElementById('sheetOverlay').classList.add('show');
+      document.getElementById('sheet').classList.add('show');
+      setTimeout(() => document.getElementById('sheetId').focus(), 300);
+    }
+    function closeAddSheet() {
+      document.getElementById('sheetOverlay').classList.remove('show');
+      document.getElementById('sheet').classList.remove('show');
+    }
+    function confirmAddSheet() {
+      const id = document.getElementById('sheetId').value;
+      const exchange = document.getElementById('sheetExchange').value;
+      if (!pushItem(id, exchange)) { showToast('请填写完整'); return; }
+      closeAddSheet();
+      showToast('已添加');
+    }
+
+    // ===== Export sheet =====
+    function openExportSheet() {
+      document.getElementById('exportSheetOverlay').classList.add('show');
+      document.getElementById('exportSheet').classList.add('show');
+    }
+    function closeExportSheet() {
+      document.getElementById('exportSheetOverlay').classList.remove('show');
+      document.getElementById('exportSheet').classList.remove('show');
+    }
+
+    // ===== Delete sheet (replaces native confirm) =====
+    function askDelete(idx) {
+      pendingBatchDelete = false;
+      pendingDeleteIdx = idx;
+      const item = state.materials[activeIndex].items[idx];
+      document.getElementById('deleteSheetText').textContent =
+        `是否删除「${item.id} · ${item.exchange}」？`;
+      document.getElementById('deleteSheet').querySelector('h3').textContent = '确认删除';
+      document.getElementById('deleteSheetOverlay').classList.add('show');
+      document.getElementById('deleteSheet').classList.add('show');
+    }
+    function askBatchDelete() {
+      pendingBatchDelete = true;
+      pendingDeleteIdx = -1;
+      const count = state.materials[activeIndex].items.length;
+      document.getElementById('deleteSheetText').textContent =
+        count === 0 ? '当前物料没有记录' : `确认删除当前物料的全部 ${count} 条记录？`;
+      document.getElementById('deleteSheet').querySelector('h3').textContent = '批量删除';
+      document.getElementById('deleteSheetOverlay').classList.add('show');
+      document.getElementById('deleteSheet').classList.add('show');
+    }
+    function closeDeleteSheet() {
+      document.getElementById('deleteSheetOverlay').classList.remove('show');
+      document.getElementById('deleteSheet').classList.remove('show');
+      pendingDeleteIdx = -1;
+      pendingBatchDelete = false;
+    }
+    function confirmDelete() {
+      if (pendingBatchDelete) {
+        const count = state.materials[activeIndex].items.length;
+        state.materials[activeIndex].items = [];
+        saveState();
+        render();
+        closeDeleteSheet();
+        showToast(count > 0 ? `已清空 ${count} 条记录` : '暂无记录可删除');
+        return;
+      }
+      if (pendingDeleteIdx < 0) return;
+      state.materials[activeIndex].items.splice(pendingDeleteIdx, 1);
+      saveState();
+      render();
+      closeDeleteSheet();
+      showToast('已删除');
+    }
+    document.getElementById('deleteSheetConfirm').addEventListener('click', confirmDelete);
+
+    // ===== Items =====
+    function toggleReceived(idx) {
+      state.materials[activeIndex].items[idx].received = !state.materials[activeIndex].items[idx].received;
+      saveState();
+      render();
+    }
+
+    function selectAllReceived(v) {
+      state.materials[activeIndex].items.forEach(it => it.received = v);
+      saveState();
+      render();
+      showToast(v ? '已全部标记领取' : '已取消标记');
+    }
+
+    function renameMaterial() {
+      const current = state.materials[activeIndex].name;
+      const next = prompt('修改当前物料名称', current);
+      if (next === null) return;
+      const trimmed = next.trim();
+      if (!trimmed) { showToast('名称不能为空'); return; }
+      state.materials[activeIndex].name = trimmed;
+      saveState();
+      render();
+      showToast('已重命名为：' + trimmed);
+    }
+
+    // ===== Tools menu =====
+    function openToolsMenu() {
+      document.getElementById('modalTitle').textContent = '工具箱';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="tools-grid">
+          <button class="btn btn-secondary" onclick="closeModal();openImport();"><span>📥</span>批量导入</button>
+          <button class="btn btn-secondary" onclick="closeModal();openStockSettings();"><span>⚙️</span>设置库存</button>
+          <button class="btn btn-secondary" onclick="closeModal();askBatchDelete();"><span>🗑️</span>批量删除</button>
+        </div>
+      `;
+      document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="closeModal()" style="width:100%">关闭</button>
+      `;
+      document.getElementById('modal').classList.add('show');
+    }
+
+    function openImport() {
+      document.getElementById('modalTitle').textContent = '批量导入 / 编辑';
+      document.getElementById('modalBody').innerHTML = `
+        <p style="margin-top:0;color:var(--muted);font-size:13px;">
+          每行一条记录，格式：<code>小红书ID | 互换物</code>（竖线、制表符或空格均可）
+        </p>
+        <textarea class="import-area" id="importArea" placeholder="例如：&#10;欧阳娜娜最爱的33 | 记忆盒子&#10;种大运 | 手作数据线"></textarea>
+      `;
+      document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="doImport()">导入到当前物料</button>
+      `;
+      document.getElementById('modal').classList.add('show');
+    }
+
+    function doImport() {
+      const raw = document.getElementById('importArea').value || '';
+      const lines = raw.split(/\n/).map(l => l.trim()).filter(Boolean);
+      let count = 0;
+      lines.forEach(line => {
+        const parts = line.split(/[|\t]/).map(s => s.trim());
+        if (parts.length >= 2) {
+          state.materials[activeIndex].items.push({ id: parts[0], exchange: parts[1], received: false });
+          count++;
+        } else {
+          const space = line.split(/\s+/);
+          if (space.length >= 2) {
+            state.materials[activeIndex].items.push({ id: space[0], exchange: space.slice(1).join(' '), received: false });
+            count++;
+          }
+        }
+      });
+      saveState();
+      closeModal();
+      render();
+      showToast(`成功导入 ${count} 条记录`);
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nabi物料备份_${new Date().toLocaleDateString()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('备份已下载');
+    }
+
+    function openStockSettings() {
+      document.getElementById('modalTitle').textContent = '设置各物料库存';
+      const inputs = state.materials.map((m, i) => `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="flex:1;font-size:14px">${escapeHtml(m.name)}</span>
+          <input type="number" min="0" value="${m.stock}" id="stock_${i}"
+            style="width:96px;padding:8px;border:1.5px solid var(--line);border-radius:10px;font-size:14px">
+        </div>
+      `).join('');
+      document.getElementById('modalBody').innerHTML = `
+        <p style="margin-top:0;color:var(--muted);font-size:13px">
+          填写每种物料的总数量，将实时计算「可换」（登记后剩余）与「待派发」（领取后剩余）。
+        </p>${inputs}`;
+      document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveStock()">保存</button>
+      `;
+      document.getElementById('modal').classList.add('show');
+    }
+
+    function saveStock() {
+      state.materials.forEach((m, i) => {
+        const v = parseInt(document.getElementById('stock_' + i).value, 10);
+        m.stock = (isNaN(v) || v < 0) ? 0 : v;
+      });
+      saveState();
+      closeModal();
+      render();
+      showToast('库存已更新');
+    }
+
+    function closeModal() { document.getElementById('modal').classList.remove('show'); }
+    function closeModalOnBackdrop(e) { if (e.target.id === 'modal') closeModal(); }
+
+    // ===== Long image export (registration) =====
+    function buildExportHTML(all = false, includeHeader = true) {
+      const sections = all ? state.materials : [state.materials[activeIndex]];
+      let html = `
+        <div style="width:520px;background:#DFDCCF;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;color:#4A3F35;box-sizing:border-box">
+          ${includeHeader ? '<img src="页面表头2.png" style="width:100%;display:block;margin-bottom:18px">' : ''}
+      `;
+      sections.forEach(m => {
+        const received = m.items.filter(x => x.received).length;
+        html += `<div style="margin-bottom:22px">
+          <div style="font-size:16px;font-weight:700;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #4A3F35">${escapeHtml(m.name)} · 库存 ${m.stock} · 已登记 ${m.items.length} · 待派发 ${m.stock - received}</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr style="background:rgba(201,168,124,0.18)">
+              <th style="border:1px solid #D8D2C2;padding:8px;width:50px;white-space:nowrap">序号</th>
+              <th style="border:1px solid #D8D2C2;padding:8px">小红书ID</th>
+              <th style="border:1px solid #D8D2C2;padding:8px">互换物</th>
+              <th style="border:1px solid #D8D2C2;padding:8px;width:60px;white-space:nowrap">状态</th>
+            </tr></thead>
+            <tbody>
+              ${m.items.length ? m.items.map((it, i) => `
+                <tr>
+                  <td style="border:1px solid #D8D2C2;padding:8px">${i + 1}</td>
+                  <td style="border:1px solid #D8D2C2;padding:8px">${escapeHtml(it.id)}</td>
+                  <td style="border:1px solid #D8D2C2;padding:8px">${escapeHtml(it.exchange)}</td>
+                  <td style="border:1px solid #D8D2C2;padding:8px;color:${it.received ? '#7FA86B' : '#8C7E6B'};font-weight:${it.received ? '700' : '400'}">${it.received ? '✓' : ''}</td>
+                </tr>
+              `).join('') : '<tr><td colspan="4" style="border:1px solid #D8D2C2;padding:10px;text-align:center;color:#8C7E6B">暂无记录</td></tr>'}
+            </tbody>
+          </table>
+        </div>`;
+      });
+      html += `<div style="text-align:center;color:#8C7E6B;font-size:12px;margin-top:8px">生成时间：${new Date().toLocaleString()}</div></div>`;
+      return html;
+    }
+
+    function captureCurrent() {
+      doCapture(buildExportHTML(false, false), `当前物料_${state.materials[activeIndex].name}.png`);
+    }
+    function captureAll() {
+      doCapture(buildExportHTML(true, false), '全部物料名单.png');
+    }
+    function doCapture(html, filename) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      const el = tmp.firstElementChild;
+      captureToImage(el, filename);
+    }
+
+    function captureToImage(el, filename) {
+      const holder = document.createElement('div');
+      holder.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;z-index:-1;';
+      holder.appendChild(el);
+      document.body.appendChild(holder);
+      showToast('正在生成长图...');
+      html2canvas(el, {
+        scale: 2,
+        backgroundColor: '#DFDCCF',
+        useCORS: true,
+        logging: false
+      }).then(canvas => {
+        if (holder.parentNode) document.body.removeChild(holder);
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('已保存到下载');
+      }).catch(err => {
+        if (holder.parentNode) document.body.removeChild(holder);
+        console.error(err);
+        showToast('保存失败，请重试');
+      });
+    }
+
+    // ===== Notes save as image (with TIPS header) =====
+    function saveNotesAsImage() {
+      const header = document.getElementById('notesHeaderArt').cloneNode(true);
+      const el = document.getElementById('captureArea').cloneNode(true);
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'background:#DFDCCF;padding:18px 0;width:520px;';
+      // Remove the edit hint if present
+      el.querySelectorAll('.hint').forEach(n => n.remove());
+      // First, prepend the TIPS header
+      const headerClone = header.cloneNode(true);
+      headerClone.style.padding = '0 16px';
+      wrap.appendChild(headerClone);
+      // Then the content
+      el.style.padding = '0 16px';
+      wrap.appendChild(el);
+
+      captureToImage(wrap, 'Nabi嘉年华_互换物料Tips.png');
+    }
+
+    // ===== Utilities =====
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>

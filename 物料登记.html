@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nabi 嘉年华 · 物料领取登记</title>
+  <script src="html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #f3efe6;
+      --panel: #faf7f1;
+      --ink: #4a3f35;
+      --muted: #8c7e6b;
+      --line: #e2d9c8;
+      --accent: #c9a87c;
+      --accent-dark: #a6885e;
+      --check: #7fa86b;
+      --danger: #c76b6b;
+      --radius: 18px;
+      --shadow: 0 4px 20px rgba(74, 63, 53, 0.08);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding-bottom: 120px;
+    }
+
+    header {
+      text-align: center;
+      padding: 24px 16px 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-img {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 0;
+    }
+
+    .container { max-width: 700px; margin: 0 auto; padding: 0 16px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 4px;
+      margin: 0 -16px;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      flex: 0 0 auto;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: var(--shadow);
+      transition: all .2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0 14px;
+    }
+    .toolbar .search-box { flex: 1 1 0; }
+    .toolbar .search-box input { padding-left: 36px; }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      box-shadow: var(--shadow);
+      transition: transform .1s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--panel); color: var(--ink); border: 1.5px solid var(--line); }
+    .btn-danger { background: #fff0f0; color: var(--danger); border: 1.5px solid #f0d0d0; }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      font-size: 20px;
+      border-radius: 12px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .tools-grid .btn {
+      flex-direction: column;
+      padding: 16px 10px;
+      font-size: 13px;
+      gap: 6px;
+    }
+    .tools-grid .btn span { font-size: 26px; }
+
+    .search-box {
+      flex: 1 1 160px;
+      min-width: 140px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px 10px 34px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 14px;
+      outline: none;
+    }
+    .search-box::before {
+      content: "🔍";
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      opacity: 0.6;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .stat-pill {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+    .stat-pill strong { color: var(--ink); }
+
+    /* Table */
+    .card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--line);
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 42px 44px 1fr 1fr 44px;
+      gap: 4px;
+      padding: 12px 10px;
+      background: rgba(201,168,124,0.12);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      border-bottom: 1.5px solid var(--line);
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 42px 44px 1fr 1fr 44px;
+      gap: 4px;
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+      font-size: 14px;
+      transition: background .15s;
+    }
+    .table-row:last-child { border-bottom: none; }
+    .table-row.received { background: rgba(127,168,107,0.08); }
+    .table-row.received .cell-text { text-decoration: line-through; opacity: 0.55; }
+
+    .cell { min-width: 0; }
+    .cell.center { display: flex; justify-content: center; align-items: center; }
+    .cell-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 4px 2px;
+    }
+
+    .checkbox {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--check);
+      cursor: pointer;
+    }
+
+    .index { color: var(--muted); font-size: 12px; text-align: center; }
+
+    .delete-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--danger);
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .delete-btn:active { background: #fff0f0; }
+
+    .empty-state {
+      text-align: center;
+      padding: 36px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(74,63,53,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--panel);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      padding: 16px 18px;
+      border-bottom: 1.5px solid var(--line);
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body { padding: 16px 18px; overflow-y: auto; }
+    .modal-footer {
+      padding: 12px 18px 18px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .close-x { background: none; border: none; font-size: 22px; color: var(--muted); cursor: pointer; }
+
+    textarea.import-area {
+      width: 100%;
+      min-height: 160px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      font-family: monospace;
+      resize: vertical;
+    }
+
+    .hidden-export {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 700px;
+      background: var(--bg);
+      padding: 24px;
+    }
+
+    .export-page {
+      background: var(--bg);
+      padding: 28px;
+      border-radius: var(--radius);
+    }
+    .export-page h2 {
+      font-family: cursive;
+      font-size: 32px;
+      margin: 0 0 6px;
+      text-align: center;
+    }
+    .export-page h3 {
+      text-align: center;
+      font-size: 18px;
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+    .export-section { margin-bottom: 28px; }
+    .export-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--ink);
+    }
+    .export-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .export-table th, .export-table td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    .export-table th { background: rgba(201,168,124,0.18); }
+    .export-table .checked { color: var(--check); font-weight: 700; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 90px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+      z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .edit-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1.5px solid var(--accent);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    /* ===== Mobile-friendly enhancements ===== */
+    body { font-size: 16px; padding-bottom: 110px; }
+
+    .sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--bg);
+      margin: 0 -16px;
+      padding: 6px 16px 8px;
+      box-shadow: 0 4px 14px rgba(74, 63, 53, 0.06);
+    }
+    .sticky-top .tabs { margin: 0; padding: 4px 0; }
+    .sticky-top .stats { margin-bottom: 0; }
+
+    .stats { flex-wrap: wrap; gap: 8px; }
+    .stat-pill { font-size: 13px; padding: 7px 13px; }
+
+    .checkbox {
+      width: 28px;
+      height: 28px;
+      accent-color: var(--check);
+      cursor: pointer;
+    }
+
+    .table-row { padding: 14px 10px; font-size: 15px; }
+    .cell-text { padding: 6px 2px; }
+
+    .delete-btn { width: 40px; height: 40px; font-size: 22px; }
+
+    /* FAB add button */
+    .fab {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(74, 63, 53, 0.3);
+      z-index: 60;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .fab:active { transform: translateX(-50%) scale(0.96); }
+
+    /* Bottom sheet */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(74, 63, 53, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+      z-index: 110;
+    }
+    .sheet-overlay.show { opacity: 1; pointer-events: auto; }
+
+    .sheet {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: var(--panel);
+      border-top-left-radius: 22px;
+      border-top-right-radius: 22px;
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.2);
+      padding: 18px 18px calc(22px + env(safe-area-inset-bottom));
+      z-index: 120;
+      transform: translateY(100%);
+      transition: transform .28s ease;
+    }
+    .sheet.show { transform: translateY(0); }
+    .sheet h3 { margin: 0 0 14px; font-size: 17px; }
+    .sheet label { display:block; font-size: 13px; color: var(--muted); margin: 10px 4px 6px; }
+    .sheet input {
+      width: 100%;
+      padding: 14px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      font-size: 16px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+    .sheet input:focus { border-color: var(--accent); }
+    .sheet .btn { width: 100%; justify-content: center; padding: 15px; font-size: 16px; margin-top: 14px; }
+
+    @media (max-width: 420px) {
+      .table-header, .table-row { grid-template-columns: 46px 30px 1fr 1fr 42px; }
+      .tab { padding: 9px 15px; font-size: 13px; }
+      .toolbar { gap: 6px; }
+      .btn { padding: 9px 11px; font-size: 12px; }
+      .icon-btn { width: 40px; height: 40px; font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="页面表头.png" alt="The Playlist · Nana's Carnival" class="header-img">
+  </header>
+
+  <div class="container">
+    <div class="sticky-top">
+      <nav class="tabs" id="tabs"></nav>
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索小红书ID…" oninput="render()">
+      </div>
+      <button class="btn btn-primary" onclick="openExportSheet()">🖼️ 长图</button>
+      <button class="btn btn-secondary icon-btn" title="更多工具" onclick="openToolsMenu()">⋮</button>
+    </div>
+
+
+    <div class="card" id="tableCard">
+      <div class="table-header">
+        <div class="cell center">领取</div>
+        <div class="cell center">#</div>
+        <div class="cell">小红书ID</div>
+        <div class="cell">互换物</div>
+        <div class="cell center"></div>
+      </div>
+      <div id="rows"></div>
+    </div>
+  </div>
+
+  <button class="fab" onclick="openAddSheet()">＋ 添加记录</button>
+
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeAddSheet()"></div>
+  <div class="sheet" id="sheet">
+    <h3 id="sheetTitle">添加记录</h3>
+    <label>小红书ID</label>
+    <input type="text" id="sheetId" placeholder="例如：欧阳娜娜最爱的33" autocomplete="off">
+    <label>互换物</label>
+    <input type="text" id="sheetExchange" placeholder="例如：记忆盒子" autocomplete="off"
+      onkeydown="if(event.key==='Enter'){confirmAddSheet()}">
+    <button class="btn btn-primary" onclick="confirmAddSheet()">确认添加</button>
+  </div>
+
+  <div class="sheet-overlay" id="exportSheetOverlay" onclick="closeExportSheet()"></div>
+  <div class="sheet" id="exportSheet">
+    <h3>导出长图</h3>
+    <button class="btn btn-primary" style="margin-top:8px" onclick="closeExportSheet();captureCurrent()">🖼️ 当前物料长图</button>
+    <button class="btn btn-secondary" style="margin-top:10px" onclick="closeExportSheet();captureAll()">🎞️ 全部物料长图</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span id="modalTitle">数据导入 / 备份</span>
+        <button class="close-x" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <!-- Hidden export container -->
+  <div id="exportHidden" class="hidden-export"></div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = 'nabiMaterialRegistry_v1';
+    const DEFAULT_MATERIALS = [
+      { name: '清凉油',         stock: 50 },
+      { name: '打卡牌',         stock: 25 },
+      { name: '冰箱贴-小鹿包', stock: 5 },
+      { name: '冰箱贴-嘉年华蛋挞', stock: 5 },
+    ];
+
+    let state = loadState();
+    let activeIndex = 0;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          parsed.materials.forEach(m => { if (typeof m.stock !== 'number') m.stock = 0; });
+          return parsed;
+        }
+      } catch (e) { console.error(e); }
+      return {
+        materials: DEFAULT_MATERIALS.map(m => ({ name: m.name, stock: m.stock, items: [] }))
+      };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getFilteredItems() {
+      const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      return state.materials[activeIndex].items
+        .map((it, idx) => ({ ...it, originalIndex: idx }))
+        .filter(it => !q || it.id.toLowerCase().includes(q) || it.exchange.toLowerCase().includes(q));
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById('tabs');
+      tabs.innerHTML = state.materials.map((m, i) => `
+        <button class="tab ${i === activeIndex ? 'active' : ''}" onclick="switchTab(${i})">
+          ${m.name}
+        </button>
+      `).join('');
+    }
+
+    function renderStats() {
+      const m = state.materials[activeIndex];
+      const registered = m.items.length;
+      const received = m.items.filter(x => x.received).length;
+      const canExchange = m.stock - registered;   // 登记时可换剩余
+      const pending = m.stock - received;          // 领取后待派发剩余
+      const warnCan = canExchange < 0 ? ' style="background:#fff0f0;color:var(--danger);border-color:#f0d0d0"' : '';
+      const warnPen = pending < 0 ? ' style="background:#fff0f0;color:var(--danger);border-color:#f0d0d0"' : '';
+      document.getElementById('stats').innerHTML = `
+        <div class="stat-pill">总库存 <strong>${m.stock}</strong></div>
+        <div class="stat-pill">已登记 <strong>${registered}</strong></div>
+        <div class="stat-pill"${warnCan}>可换 <strong>${canExchange}</strong></div>
+        <div class="stat-pill"${warnPen}>待派发 <strong>${pending}</strong></div>
+      `;
+    }
+
+    function renderRows() {
+      const list = getFilteredItems();
+      const rows = document.getElementById('rows');
+      if (!list.length) {
+        rows.innerHTML = `<div class="empty-state">暂无记录，在底部添加粉丝ID和互换物</div>`;
+        return;
+      }
+      rows.innerHTML = list.map((it, i) => `
+        <div class="table-row ${it.received ? 'received' : ''}">
+          <div class="cell center">
+            <input type="checkbox" class="checkbox" ${it.received ? 'checked' : ''}
+              onchange="toggleReceived(${it.originalIndex})">
+          </div>
+          <div class="cell center index">${i + 1}</div>
+          <div class="cell">
+            <div class="cell-text" onclick="editCell(${it.originalIndex}, 'id')">${escapeHtml(it.id)}</div>
+          </div>
+          <div class="cell">
+            <div class="cell-text" onclick="editCell(${it.originalIndex}, 'exchange')">${escapeHtml(it.exchange)}</div>
+          </div>
+          <div class="cell center">
+            <button class="delete-btn" onclick="deleteItem(${it.originalIndex})">&times;</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function render() {
+      renderTabs();
+      renderStats();
+      renderRows();
+    }
+
+    function switchTab(i) {
+      activeIndex = i;
+      document.getElementById('searchInput').value = '';
+      render();
+    }
+
+    function pushItem(id, exchange) {
+      id = (id || '').trim();
+      exchange = (exchange || '').trim();
+      if (!id || !exchange) return false;
+      state.materials[activeIndex].items.push({ id, exchange, received: false });
+      saveState();
+      render();
+      return true;
+    }
+
+    function openAddSheet() {
+      document.getElementById('sheetTitle').textContent = '添加记录 · ' + state.materials[activeIndex].name;
+      document.getElementById('sheetId').value = '';
+      document.getElementById('sheetExchange').value = '';
+      document.getElementById('sheetOverlay').classList.add('show');
+      document.getElementById('sheet').classList.add('show');
+      setTimeout(() => document.getElementById('sheetId').focus(), 300);
+    }
+
+    function closeAddSheet() {
+      document.getElementById('sheetOverlay').classList.remove('show');
+      document.getElementById('sheet').classList.remove('show');
+    }
+
+    function confirmAddSheet() {
+      const id = document.getElementById('sheetId').value;
+      const exchange = document.getElementById('sheetExchange').value;
+      if (!pushItem(id, exchange)) { showToast('请填写完整'); return; }
+      closeAddSheet();
+      showToast('已添加');
+    }
+
+    function openExportSheet() {
+      document.getElementById('exportSheetOverlay').classList.add('show');
+      document.getElementById('exportSheet').classList.add('show');
+    }
+
+    function closeExportSheet() {
+      document.getElementById('exportSheetOverlay').classList.remove('show');
+      document.getElementById('exportSheet').classList.remove('show');
+    }
+
+    function toggleReceived(idx) {
+      state.materials[activeIndex].items[idx].received = !state.materials[activeIndex].items[idx].received;
+      saveState();
+      render();
+    }
+
+    function selectAllReceived(v) {
+      state.materials[activeIndex].items.forEach(it => it.received = v);
+      saveState();
+      render();
+      showToast(v ? '已全部标记领取' : '已取消标记');
+    }
+
+    function deleteItem(idx) {
+      const id = state.materials[activeIndex].items[idx].id;
+      if (!confirm(`确定删除「${id}」的记录吗？`)) return;
+      state.materials[activeIndex].items.splice(idx, 1);
+      saveState();
+      render();
+      showToast('已删除');
+    }
+
+    function renameMaterial() {
+      const current = state.materials[activeIndex].name;
+      const next = prompt('修改当前物料名称', current);
+      if (next === null) return;
+      const trimmed = next.trim();
+      if (!trimmed) { showToast('名称不能为空'); return; }
+      state.materials[activeIndex].name = trimmed;
+      saveState();
+      render();
+      showToast('已重命名为：' + trimmed);
+    }
+
+    function openStockSettings() {
+      document.getElementById('modalTitle').textContent = '设置各物料库存';
+      const inputs = state.materials.map((m, i) => `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="flex:1;font-size:14px">${escapeHtml(m.name)}</span>
+          <input type="number" min="0" value="${m.stock}" id="stock_${i}"
+            style="width:96px;padding:8px;border:1.5px solid var(--line);border-radius:10px;font-size:14px">
+        </div>
+      `).join('');
+      document.getElementById('modalBody').innerHTML = `
+        <p style="margin-top:0;color:var(--muted);font-size:13px">
+          填写每种物料的总数量，将实时计算「可换」（登记后剩余）与「待派发」（领取后剩余）。
+        </p>${inputs}`;
+      document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveStock()">保存</button>
+      `;
+      document.getElementById('modal').classList.add('show');
+    }
+
+    function saveStock() {
+      state.materials.forEach((m, i) => {
+        const v = parseInt(document.getElementById('stock_' + i).value, 10);
+        m.stock = (isNaN(v) || v < 0) ? 0 : v;
+      });
+      saveState();
+      closeModal();
+      render();
+      showToast('库存已更新');
+    }
+
+    function editCell(idx, field) {
+      const item = state.materials[activeIndex].items[idx];
+      const oldVal = item[field];
+      const newVal = prompt(field === 'id' ? '修改小红书ID' : '修改互换物', oldVal);
+      if (newVal === null) return;
+      const trimmed = newVal.trim();
+      if (!trimmed) {
+        showToast('内容不能为空');
+        return;
+      }
+      item[field] = trimmed;
+      saveState();
+      render();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    /* Tools menu */
+    function openToolsMenu() {
+      document.getElementById('modalTitle').textContent = '工具箱';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="tools-grid">
+          <button class="btn btn-secondary" onclick="closeModal();location.href='注意事项.html';"><span>📋</span>查看互换 Tips</button>
+          <button class="btn btn-secondary" onclick="closeModal();openImport();"><span>📥</span>批量导入</button>
+          <button class="btn btn-secondary" onclick="closeModal();exportJSON();"><span>💾</span>备份数据</button>
+          <button class="btn btn-secondary" onclick="closeModal();openStockSettings();"><span>⚙️</span>设置库存</button>
+          <button class="btn btn-secondary" onclick="closeModal();renameMaterial();"><span>✏️</span>重命名</button>
+          <button class="btn btn-secondary" onclick="closeModal();selectAllReceived(true);"><span>✅</span>全选已领</button>
+        </div>
+      `;
+      document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="closeModal()" style="width:100%">关闭</button>
+      `;
+      document.getElementById('modal').classList.add('show');
+    }
+
+    /* Import / Export */
+    function openImport() {
+      document.getElementById('modalTitle').textContent = '批量导入 / 编辑';
+      document.getElementById('modalBody').innerHTML = `
+        <p style="margin-top:0;color:var(--muted);font-size:13px;">
+          每行一条记录，格式：<code>小红书ID | 互换物</code>（竖线、制表符或空格均可）
+        </p>
+        <textarea class="import-area" id="importArea" placeholder="例如：\n欧阳娜娜最爱的33 | 记忆盒子\n种大运 | 手作数据线"></textarea>
+      `;
+      document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="doImport()">导入到当前物料</button>
+      `;
+      document.getElementById('modal').classList.add('show');
+    }
+
+    function doImport() {
+      const raw = document.getElementById('importArea').value || '';
+      const lines = raw.split(/\n/).map(l => l.trim()).filter(Boolean);
+      let count = 0;
+      lines.forEach(line => {
+        const parts = line.split(/[|\t]/).map(s => s.trim());
+        if (parts.length >= 2) {
+          state.materials[activeIndex].items.push({ id: parts[0], exchange: parts[1], received: false });
+          count++;
+        } else {
+          const space = line.split(/\s+/);
+          if (space.length >= 2) {
+            state.materials[activeIndex].items.push({ id: space[0], exchange: space.slice(1).join(' '), received: false });
+            count++;
+          }
+        }
+      });
+      saveState();
+      closeModal();
+      render();
+      showToast(`成功导入 ${count} 条记录`);
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nabi物料备份_${new Date().toLocaleDateString()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('备份已下载');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('show');
+    }
+    function closeModalOnBackdrop(e) {
+      if (e.target.id === 'modal') closeModal();
+    }
+
+    /* Long image export */
+    function buildExportHTML(all = false) {
+      const sections = all ? state.materials : [state.materials[activeIndex]];
+      let html = `
+        <div class="export-page">
+          <h2>The Playlist</h2>
+          <h3>Nabi 嘉年华 · 物料领取登记表</h3>
+      `;
+      sections.forEach(m => {
+        const received = m.items.filter(x => x.received).length;
+        html += `<div class="export-section">
+          <div class="export-section-title">${escapeHtml(m.name)} · 库存 ${m.stock} · 已登记 ${m.items.length} · 待派发 ${m.stock - received}</div>
+          <table class="export-table">
+            <thead>
+              <tr><th style="width:40px">序号</th><th>小红书ID</th><th>互换物</th><th style="width:60px">状态</th></tr>
+            </thead>
+            <tbody>
+              ${m.items.length ? m.items.map((it, i) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${escapeHtml(it.id)}</td>
+                  <td>${escapeHtml(it.exchange)}</td>
+                  <td class="${it.received ? 'checked' : ''}">${it.received ? '✓' : ''}</td>
+                </tr>
+              `).join('') : '<tr><td colspan="4" style="color:#8c7e6b;text-align:center">暂无记录</td></tr>'}
+            </tbody>
+          </table>
+        </div>`;
+      });
+      html += `<div style="text-align:center;color:#8c7e6b;font-size:12px;margin-top:10px">生成时间：${new Date().toLocaleString()}</div></div>`;
+      return html;
+    }
+
+    function captureCurrent() {
+      doCapture(buildExportHTML(false), `当前物料_${state.materials[activeIndex].name}.png`);
+    }
+
+    function captureAll() {
+      doCapture(buildExportHTML(true), '全部物料名单.png');
+    }
+
+    function doCapture(html, filename) {
+      const el = document.getElementById('exportHidden');
+      el.innerHTML = html;
+      el.style.display = 'block';
+
+      showToast('正在生成图片…');
+      setTimeout(() => {
+        html2canvas(el.firstElementChild, {
+          scale: 2,
+          backgroundColor: '#f3efe6',
+          useCORS: true,
+          logging: false
+        }).then(canvas => {
+          el.style.display = 'none';
+          const link = document.createElement('a');
+          link.download = filename;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          showToast('长图已保存');
+        }).catch(err => {
+          el.style.display = 'none';
+          console.error(err);
+          showToast('生成失败，请重试');
+        });
+      }, 100);
+    }
+
+    // Initialize
+    render();
+  </script>
+</body>
+</html>

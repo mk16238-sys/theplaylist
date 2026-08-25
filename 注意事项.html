@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="互换物料 Tips">
+  <meta name="theme-color" content="#DFDCCF">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="图标.png">
+  <link rel="icon" type="image/png" href="图标.png">
+  <title>互换物料 Tips · Nabi 嘉年华</title>
+  <script src="html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #DFDCCF;
+      --panel: #FAF7F1;
+      --ink: #4A3F35;
+      --muted: #8C7E6B;
+      --line: #D8D2C2;
+      --accent: #C9A87C;
+      --radius: 18px;
+      --shadow: 0 4px 20px rgba(74, 63, 53, 0.08);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.7;
+      padding-bottom: 110px;
+      -webkit-text-size-adjust: 100%;
+    }
+    .header-img { width: 100%; display: block; }
+    .app-header { padding: 12px 0 4px; text-align: center; }
+    .wrap { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+    .top-nav {
+      max-width: 520px; margin: 0 auto;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px 0;
+    }
+    .nav-btn {
+      border: 1.5px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .nav-btn:active { transform: scale(0.96); }
+    .nav-btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .nav-spacer { flex: 1; }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      letter-spacing: 2px;
+      margin: 22px 0 14px;
+      font-weight: 700;
+    }
+    h2 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 22px 0 10px;
+      letter-spacing: 1px;
+    }
+    .hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 6px 0 10px;
+    }
+    .materials {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .material-card {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 8px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .material-card img {
+      width: 100%; height: auto;
+      border-radius: 10px;
+      display: block; margin-bottom: 6px;
+    }
+    .material-card span { font-size: 13px; color: var(--muted); }
+
+    .divider { border: none; border-top: 2px dashed var(--line); margin: 22px 0; }
+
+    .note-list { list-style: none; padding: 0; margin: 0; }
+    .note-list li {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .note-list .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+      background: var(--ink);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .note-list .title { font-weight: 700; font-size: 16px; }
+    .note-list p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+    .note-list .inline-img {
+      width: 100%;
+      max-width: 280px;
+      border-radius: 12px;
+      margin: 10px auto 4px;
+      display: block;
+    }
+    .note-list .caption {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 4px 0 6px;
+    }
+    .ootd-img {
+      width: 100%;
+      max-width: 280px;
+      border-radius: 14px;
+      display: block;
+      margin: 0 auto 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .tips {
+      background: rgba(201, 168, 124, 0.15);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--muted);
+      margin: 18px 0;
+    }
+    .tips strong { color: var(--ink); }
+
+    footer {
+      background: var(--ink);
+      color: #fff;
+      text-align: center;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 10px;
+    }
+
+    [contenteditable="true"] {
+      outline: none;
+      border-radius: 6px;
+      transition: background .2s;
+    }
+    [contenteditable="true"]:hover { background: rgba(201, 168, 124, 0.12); }
+    [contenteditable="true"]:focus { background: rgba(201, 168, 124, 0.22); }
+
+    .fab {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(74, 63, 53, 0.3);
+      z-index: 60;
+      cursor: pointer;
+    }
+    .fab:active { transform: translateX(-50%) scale(0.96); }
+
+    .hidden-export {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 520px;
+      background: var(--bg);
+    }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 90px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink); color: #fff;
+      padding: 10px 18px; border-radius: 999px;
+      font-size: 13px; opacity: 0; pointer-events: none;
+      transition: all .25s ease; z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 420px) {
+      h1 { font-size: 22px; }
+      .materials { gap: 8px; }
+      .material-card { padding: 6px; }
+      .material-card span { font-size: 12px; }
+      .nav-btn { padding: 7px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header" id="notesHeaderArt">
+    <img src="TIPS备份.png" alt="The Playlist · 互换物料 Tips" class="header-img">
+  </header>
+
+  <div class="top-nav">
+    <a class="nav-btn" href="物料登记.html">← 返回登记</a>
+    <div class="nav-spacer"></div>
+    <button class="nav-btn primary" onclick="saveAsImage()">生成长图</button>
+  </div>
+
+  <div class="wrap" id="captureArea">
+    <h1 contenteditable="true">互换物料 Tips</h1>
+    <p class="hint hint-row">点击文字可直接修改，修改后点上方「生成长图」保存</p>
+
+    <h2 contenteditable="true">物料：</h2>
+    <div class="materials">
+      <div class="material-card">
+        <img src="a5c834d328c619e7d25489a5145eaf36.jpg" alt="清凉油">
+        <span contenteditable="true">清凉油</span>
+      </div>
+      <div class="material-card">
+        <img src="打卡批.jpg" alt="打卡牌">
+        <span contenteditable="true">打卡牌</span>
+      </div>
+      <div class="material-card">
+        <img src="冰箱贴.jpg" alt="冰箱贴">
+        <span contenteditable="true">冰箱贴</span>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <h2 contenteditable="true">物料互换注意事项：</h2>
+    <ul class="note-list">
+      <li>
+        <div class="title"><span class="num">1</span><span contenteditable="true">互换时间：16:30 开始</span></div>
+        <p contenteditable="true">15:30 我开始入场进行周边采购，随身物品较多，该时间段不进行常规互换；路上偶遇识别出 ootd 可以例外进行交换。</p>
+      </li>
+      <li>
+        <div class="title"><span class="num">2</span><span contenteditable="true">互换地点：集市中心雕塑</span></div>
+        <p contenteditable="true">如果现场该地点人流过多，可能会临时更换地点，请随时查看群消息～</p>
+        <img src="位图.png" alt="互换地点" class="inline-img">
+        <div class="caption" contenteditable="true">正对嘉年华入口方向</div>
+      </li>
+      <li>
+        <div class="title"><span class="num">3</span><span contenteditable="true">互换规则：见面请先提供小红书 ID</span></div>
+        <p contenteditable="true">碰面请第一时间提供您的小红书 id，待我核对记录表后进行互换；没有告知 id 的情况下暂不进行互换。</p>
+      </li>
+    </ul>
+
+    <h2 contenteditable="true">我的 ootd 照片：</h2>
+    <img src="编组.png" alt="ootd" class="ootd-img">
+
+    <div class="tips" contenteditable="true">
+      <strong>Tips：</strong>如果现场人太多挤散，可以约定退场之后场外再互换；现场嘈杂听不清，可以简单打字沟通。遇到强行索要、纠缠的人，可以直接礼貌拒绝，不用不好意思。
+    </div>
+
+    <footer contenteditable="true">
+      请各位互换的宝宝提前将本图保存，方便现场互换顺利～
+    </footer>
+  </div>
+
+  <div id="exportHidden" class="hidden-export"></div>
+  <button class="fab" onclick="saveAsImage()">生成长图</button>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    function saveAsImage() {
+      const header = document.getElementById('notesHeaderArt').cloneNode(true);
+      const el = document.getElementById('captureArea').cloneNode(true);
+      const hidden = document.getElementById('exportHidden');
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'background:#DFDCCF;padding:18px 0;width:520px;';
+      // Remove edit hints
+      el.querySelectorAll('.hint-row').forEach(n => n.remove());
+      // Prepend the TIPS header
+      const headerClone = header.cloneNode(true);
+      headerClone.style.padding = '0 16px';
+      wrap.appendChild(headerClone);
+      el.style.padding = '0 16px';
+      wrap.appendChild(el);
+      hidden.innerHTML = '';
+      hidden.appendChild(wrap);
+      hidden.style.display = 'block';
+
+      showToast('正在生成长图...');
+      html2canvas(wrap, {
+        scale: 2,
+        backgroundColor: '#DFDCCF',
+        useCORS: true,
+        logging: false
+      }).then(canvas => {
+        hidden.style.display = 'none';
+        const link = document.createElement('a');
+        link.download = 'Nabi嘉年华_互换物料Tips.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('已保存到下载');
+      }).catch(err => {
+        hidden.style.display = 'none';
+        console.error(err);
+        showToast('保存失败，请重试');
+      });
+    }
+  </script>
+</body>
+</html>

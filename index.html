@@ -185,7 +185,7 @@
     }
     .data-head {
       display: grid;
-      grid-template-columns: 40px 36px 1.4fr 1fr 36px;
+      grid-template-columns: 40px 36px 1.4fr 1fr 36px 36px;
       align-items: center;
       gap: 4px;
       padding: 10px 8px;
@@ -200,7 +200,7 @@
 
     .data-item {
       display: grid;
-      grid-template-columns: 40px 36px 1.4fr 1fr 36px;
+      grid-template-columns: 40px 36px 1.4fr 1fr 36px 36px;
       align-items: center;
       gap: 4px;
       padding: 10px 8px;
@@ -276,6 +276,35 @@
       display: flex; align-items: center; justify-content: center;
     }
     .di-del:active { background: #fff0f0; }
+    .di-move {
+      width: 28px; height: 28px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 15px;
+      cursor: grab;
+      border-radius: 8px;
+      margin: 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .di-move:active { background: rgba(74, 63, 53, 0.08); }
+    /* 拖拽中的行：跟随手指、浮起 */
+    .data-item.dragging {
+      position: relative;
+      z-index: 20;
+      background: #fff;
+      box-shadow: 0 10px 26px rgba(74, 63, 53, 0.2);
+      border-radius: 10px;
+      opacity: 0.95;
+      transition: none;
+    }
+    /* 让位中的行：平滑过渡 */
+    .data-item.shift { transition: transform .18s ease; }
+    .btn:disabled { opacity: 0.4; pointer-events: none; }
 
     .empty-state {
       text-align: center;
@@ -901,6 +930,7 @@
           <span class="dh-id">小红书ID</span>
           <span class="dh-ex">互换物</span>
           <span class="dh-del"></span>
+          <span class="dh-move"></span>
         </div>
       `;
       if (!list.length) {
@@ -914,6 +944,7 @@
           <div class="di-id" contenteditable="true" data-idx="${it.originalIndex}" data-field="id">${escapeHtml(it.id)}</div>
           <div class="di-ex" contenteditable="true" data-idx="${it.originalIndex}" data-field="exchange">${escapeHtml(it.exchange)}</div>
           <button class="di-del" data-idx="${it.originalIndex}">×</button>
+          <button class="di-move" data-idx="${it.originalIndex}" title="调整顺序">⇅</button>
         </div>
       `).join('');
 
@@ -926,6 +957,11 @@
       rows.querySelectorAll('.di-del').forEach(el => {
         el.addEventListener('click', () => {
           askDelete(parseInt(el.dataset.idx, 10));
+        });
+      });
+      rows.querySelectorAll('.di-move').forEach(el => {
+        el.addEventListener('pointerdown', e => {
+          startDrag(e, parseInt(el.dataset.idx, 10));
         });
       });
       rows.querySelectorAll('.di-id, .di-ex').forEach(el => {
@@ -1056,6 +1092,87 @@
       showToast('已删除');
     }
     document.getElementById('deleteSheetConfirm').addEventListener('click', confirmDelete);
+
+    // ===== Drag to reorder =====
+    let drag = null;
+    function startDrag(e, idx) {
+      // 搜索过滤时禁用拖拽（位置会错乱）
+      const q = (document.getElementById('searchInput').value || '').trim();
+      if (q) { showToast('请先清空搜索再调整顺序'); return; }
+      const row = e.currentTarget.closest('.data-item');
+      if (!row) return;
+      e.preventDefault();
+      drag = {
+        idx: idx,                    // 拖拽项在 items 数组中的下标
+        row: row,
+        rect: row.getBoundingClientRect(),
+        startY: e.clientY,
+        shiftY: 0,                   // 手指总位移
+        target: idx,                 // 目标插入位置（others 序列中）
+        active: false                // 是否已越过拖拽阈值
+      };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      e.currentTarget.addEventListener('pointermove', onDragMove);
+      e.currentTarget.addEventListener('pointerup', onDragEnd);
+      e.currentTarget.addEventListener('pointercancel', onDragEnd);
+    }
+
+    function onDragMove(e) {
+      if (!drag) return;
+      const dy = e.clientY - drag.startY;
+      drag.shiftY = dy;
+      if (!drag.active) {
+        if (Math.abs(dy) < 8) return;   // 阈值：防止轻触误拖
+        drag.active = true;
+        drag.row.classList.add('dragging');
+        // 其他行开启平滑让位
+        document.querySelectorAll('#rows .data-item').forEach(r => {
+          if (r !== drag.row) r.classList.add('shift');
+        });
+      }
+      // 拖拽行跟手
+      drag.row.style.transform = `translateY(${dy}px)`;
+
+      // 计算目标插入位置（other 行的序列位置 0..n）
+      const others = [...document.querySelectorAll('#rows .data-item')].filter(r => r !== drag.row);
+      const fingerY = drag.startY + dy + drag.rect.height / 2;
+      let target = others.length;
+      for (let i = 0; i < others.length; i++) {
+        const rc = others[i].getBoundingClientRect();
+        if (fingerY < rc.top + rc.height / 2) { target = i; break; }
+      }
+      drag.target = target;
+      const rowH = drag.rect.height;
+      others.forEach((r, i) => {
+        let shift = 0;
+        if (drag.idx < target) {
+          if (i >= drag.idx && i < target) shift = -rowH;
+        } else if (drag.idx > target) {
+          if (i < drag.idx && i >= target) shift = rowH;
+        }
+        r.style.transform = shift ? `translateY(${shift}px)` : '';
+      });
+    }
+
+    function onDragEnd(e) {
+      if (!drag) return;
+      const d = drag;
+      drag = null;
+      const el = e.currentTarget;
+      el.removeEventListener('pointermove', onDragMove);
+      el.removeEventListener('pointerup', onDragEnd);
+      el.removeEventListener('pointercancel', onDragEnd);
+      if (!d.active) return;   // 未达阈值，视为点击，不做处理
+      const items = state.materials[activeIndex].items;
+      const target = d.target;
+      const [moved] = items.splice(d.idx, 1);
+      let insertAt = target;
+      if (d.idx < target) insertAt = target - 1;
+      items.splice(insertAt, 0, moved);
+      saveState();
+      render();
+      showToast('已调整顺序');
+    }
 
     // ===== Items =====
     function toggleReceived(idx) {

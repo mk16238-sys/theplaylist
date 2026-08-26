@@ -383,6 +383,9 @@
       transition: transform .28s ease;
     }
     .sheet.show { transform: translateY(0); }
+    /* 删除确认需盖过设置弹窗（modal z-index 200） */
+    #deleteSheetOverlay { z-index: 210; }
+    #deleteSheet { z-index: 220; }
     .sheet h3 { margin: 0 0 14px; font-size: 17px; }
     .sheet label { display: block; font-size: 13px; color: var(--muted); margin: 10px 4px 6px; }
     .sheet input {
@@ -730,57 +733,58 @@
     <div class="top-nav" style="max-width: 520px; margin: 0 auto; padding: 10px 16px 0;">
       <button class="nav-btn" onclick="switchView('register')">← 返回登记</button>
       <div class="nav-spacer"></div>
+      <button class="nav-btn" onclick="saveNotes()">保存内容</button>
       <button class="nav-btn primary" onclick="saveNotesAsImage()">生成长图</button>
     </div>
 
     <div class="notes-wrap" id="captureArea">
-      <h2 class="notes-h2" contenteditable="true">物料：</h2>
+      <h2 class="notes-h2" contenteditable="true" data-notes="matTitle">物料：</h2>
       <div class="notes-materials">
         <div class="notes-mat-card">
           <img src="a5c834d328c619e7d25489a5145eaf36.jpg" alt="清凉油">
-          <span contenteditable="true">清凉油</span>
+          <span contenteditable="true" data-notes="mat0">清凉油</span>
         </div>
         <div class="notes-mat-card">
           <img src="打卡批.jpg" alt="打卡牌">
-          <span contenteditable="true">打卡牌</span>
+          <span contenteditable="true" data-notes="mat1">打卡牌</span>
         </div>
         <div class="notes-mat-card">
           <img src="冰箱贴.jpg" alt="冰箱贴">
-          <span contenteditable="true">冰箱贴</span>
+          <span contenteditable="true" data-notes="mat2">冰箱贴</span>
         </div>
       </div>
 
       <hr class="notes-divider">
 
-      <h2 class="notes-h2" contenteditable="true">物料互换注意事项：</h2>
+      <h2 class="notes-h2" contenteditable="true" data-notes="ruleTitle">物料互换注意事项：</h2>
       <ul class="notes-list">
         <li>
-          <div class="title"><span class="num">1</span><span contenteditable="true">互换时间：16:30 开始</span></div>
-          <p contenteditable="true">15:30 我开始入场进行周边采购，随身物品较多，该时间段不进行常规互换；路上偶遇识别出 ootd 可以例外进行交换。</p>
+          <div class="title"><span class="num">1</span><span contenteditable="true" data-notes="r1Title">互换时间：16:30 开始</span></div>
+          <p contenteditable="true" data-notes="r1Desc">15:30 我开始入场进行周边采购，随身物品较多，该时间段不进行常规互换；路上偶遇识别出 ootd 可以例外进行交换。</p>
         </li>
       </ul>
 
       <div class="loc-row">
         <div class="loc-text">
-          <div class="title"><span class="num">2</span><span contenteditable="true">互换地点：集市中心雕塑</span></div>
-          <p contenteditable="true">如果现场该地点人流过多，可能会临时更换地点，请随时查看群消息～</p>
+          <div class="title"><span class="num">2</span><span contenteditable="true" data-notes="r2Title">互换地点：集市中心雕塑</span></div>
+          <p contenteditable="true" data-notes="r2Desc">如果现场该地点人流过多，可能会临时更换地点，请随时查看群消息～</p>
         </div>
         <div class="loc-img-wrap">
           <img src="位图.png" alt="互换地点" class="loc-img">
-          <div class="loc-caption" contenteditable="true">正对嘉年华入口方向</div>
+          <div class="loc-caption" contenteditable="true" data-notes="locCaption">正对嘉年华入口方向</div>
         </div>
       </div>
 
       <ul class="notes-list">
         <li>
-          <div class="title"><span class="num">3</span><span contenteditable="true">互换规则：见面请先提供小红书 ID</span></div>
-          <p contenteditable="true">碰面请第一时间提供您的小红书 id，待我核对记录表后进行互换；没有告知 id 的情况下暂不进行互换。</p>
+          <div class="title"><span class="num">3</span><span contenteditable="true" data-notes="r3Title">互换规则：见面请先提供小红书 ID</span></div>
+          <p contenteditable="true" data-notes="r3Desc">碰面请第一时间提供您的小红书 id，待我核对记录表后进行互换；没有告知 id 的情况下暂不进行互换。</p>
         </li>
       </ul>
 
-      <h2 class="notes-h2" contenteditable="true">当日OOTD</h2>
+      <h2 class="notes-h2" contenteditable="true" data-notes="ootdTitle">当日OOTD</h2>
       <div class="ootd-row">
-        <div class="ootd-text" contenteditable="true">
+        <div class="ootd-text" contenteditable="true" data-notes="ootdText">
           <strong>当日OOTD💪</strong><br>
           <strong>Tips：</strong>如果现场人太多挤散，可以约定退场之后场外再互换；现场嘈杂听不清，可以简单打字沟通。遇到强行索要、纠缠的人，可以直接礼貌拒绝，不用不好意思。确认<br>
           ① 一对一交换物料
@@ -788,7 +792,7 @@
         <img src="编组.png" alt="ootd" class="ootd-img">
       </div>
 
-      <div class="notes-footer" contenteditable="true">
+      <div class="notes-footer" contenteditable="true" data-notes="footer">
         请各位互换的宝宝提前将本图保存，方便现场互换顺利～
       </div>
     </div>
@@ -864,6 +868,7 @@
     let state = loadState();
     let activeIndex = 0;
     let pendingDeleteIdx = -1;
+    let pendingRemoveMaterial = -1; // 设置库存弹窗中待删除的物料索引
     let pendingBatchDelete = false;
 
     function loadState() {
@@ -1073,8 +1078,17 @@
       document.getElementById('deleteSheet').classList.remove('show');
       pendingDeleteIdx = -1;
       pendingBatchDelete = false;
+      pendingRemoveMaterial = -1;
     }
     function confirmDelete() {
+      if (pendingRemoveMaterial >= 0) {
+        const removed = stockDraft ? stockDraft.splice(pendingRemoveMaterial, 1)[0] : null;
+        pendingRemoveMaterial = -1;
+        closeDeleteSheet();
+        renderStockEditor();
+        showToast(removed ? `已删除「${removed.name || '该物料'}」` : '已删除');
+        return;
+      }
       if (pendingBatchDelete) {
         const count = state.materials[activeIndex].items.length;
         state.materials[activeIndex].items = [];
@@ -1188,25 +1202,13 @@
       showToast(v ? '已全部标记领取' : '已取消标记');
     }
 
-    function renameMaterial() {
-      const current = state.materials[activeIndex].name;
-      const next = prompt('修改当前物料名称', current);
-      if (next === null) return;
-      const trimmed = next.trim();
-      if (!trimmed) { showToast('名称不能为空'); return; }
-      state.materials[activeIndex].name = trimmed;
-      saveState();
-      render();
-      showToast('已重命名为：' + trimmed);
-    }
-
     // ===== Tools menu =====
     function openToolsMenu() {
       document.getElementById('modalTitle').textContent = '工具箱';
       document.getElementById('modalBody').innerHTML = `
         <div class="tools-grid">
           <button class="btn btn-secondary" onclick="closeModal();openImport();"><span>📥</span>批量导入</button>
-          <button class="btn btn-secondary" onclick="closeModal();openStockSettings();"><span>⚙️</span>设置库存</button>
+          <button class="btn btn-secondary" onclick="closeModal();openStockSettings();"><span>⚙️</span>物料设置</button>
           <button class="btn btn-secondary" onclick="closeModal();askBatchDelete();"><span>🗑️</span>批量删除</button>
         </div>
       `;
@@ -1265,38 +1267,84 @@
       showToast('备份已下载');
     }
 
+    let stockDraft = null; // 设置弹窗编辑中的物料草稿（深拷贝，取消即丢弃）
+
     function openStockSettings() {
-      document.getElementById('modalTitle').textContent = '设置各物料库存';
-      const inputs = state.materials.map((m, i) => `
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <span style="flex:1;font-size:14px">${escapeHtml(m.name)}</span>
+      stockDraft = JSON.parse(JSON.stringify(state.materials));
+      renderStockEditor();
+    }
+
+    function renderStockEditor() {
+      document.getElementById('modalTitle').textContent = '设置物料名称与库存';
+      if (!stockDraft.length) stockDraft = [{ name: '', stock: 0, items: [] }];
+      const inputs = stockDraft.map((m, i) => `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <input type="text" value="${escapeHtml(m.name)}" id="name_${i}"
+            placeholder="物料名称"
+            style="flex:1;min-width:0;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;font-size:14px">
           <input type="number" min="0" value="${m.stock}" id="stock_${i}"
-            style="width:96px;padding:8px;border:1.5px solid var(--line);border-radius:10px;font-size:14px">
+            style="width:88px;padding:8px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;text-align:center">
+          <button type="button" onclick="askRemoveMaterial(${i})"
+            style="flex:none;width:34px;height:34px;border:none;border-radius:10px;background:#F6E3DA;color:#C06B4B;font-size:15px;line-height:1;cursor:pointer"
+            title="删除此物料">✕</button>
         </div>
       `).join('');
       document.getElementById('modalBody').innerHTML = `
         <p style="margin-top:0;color:var(--muted);font-size:13px">
-          填写每种物料的总数量，将实时计算「可换」（登记后剩余）与「待派发」（领取后剩余）。
+          左侧改名称、中间改总数量，点 ✕ 删除物料，点下方按钮增加物料。将实时计算「可换」与「待派发」。
         </p>${inputs}`;
       document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="addMaterialRow()"><span>＋</span>添加物料</button>
         <button class="btn btn-secondary" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" onclick="saveStock()">保存</button>
       `;
       document.getElementById('modal').classList.add('show');
     }
 
+    function addMaterialRow() {
+      stockDraft.push({ name: '', stock: 0, items: [] });
+      renderStockEditor();
+      const el = document.getElementById('name_' + (stockDraft.length - 1));
+      if (el) { el.focus(); el.select(); }
+    }
+
+    function askRemoveMaterial(i) {
+      const m = stockDraft[i];
+      if (!m) return;
+      pendingRemoveMaterial = i;
+      const nameEl = document.getElementById('name_' + i);
+      const displayName = (nameEl && nameEl.value.trim()) || m.name || '该物料';
+      const count = m.items.length;
+      document.getElementById('deleteSheetText').textContent =
+        count > 0
+          ? `将删除「${displayName}」及其 ${count} 条登记记录，删除后不可恢复！`
+          : `确定删除物料「${displayName}」？`;
+      document.getElementById('deleteSheet').querySelector('h3').textContent = '删除物料';
+      document.getElementById('deleteSheetOverlay').classList.add('show');
+      document.getElementById('deleteSheet').classList.add('show');
+    }
+
     function saveStock() {
-      state.materials.forEach((m, i) => {
+      stockDraft.forEach((m, i) => {
+        const nameEl = document.getElementById('name_' + i);
+        const name = (nameEl ? nameEl.value : '').trim();
+        if (name) m.name = name;
         const v = parseInt(document.getElementById('stock_' + i).value, 10);
         m.stock = (isNaN(v) || v < 0) ? 0 : v;
       });
+      // 空名称补位，避免出现无名物料
+      stockDraft.forEach((m, i) => { if (!m.name.trim()) m.name = '未命名物料' + (i + 1); });
+      if (!stockDraft.length) stockDraft = [{ name: '未命名物料', stock: 0, items: [] }];
+      state.materials = stockDraft;
+      stockDraft = null;
+      if (activeIndex >= state.materials.length) activeIndex = Math.max(0, state.materials.length - 1);
       saveState();
       closeModal();
       render();
-      showToast('库存已更新');
+      showToast('名称与库存已保存');
     }
 
-    function closeModal() { document.getElementById('modal').classList.remove('show'); }
+    function closeModal() { document.getElementById('modal').classList.remove('show'); stockDraft = null; }
     function closeModalOnBackdrop(e) { if (e.target.id === 'modal') closeModal(); }
 
     // ===== Long image export (registration) =====
@@ -1459,7 +1507,32 @@
       showToast._t = setTimeout(() => t.classList.remove('show'), 1800);
     }
 
+    // ===== Notes content persistence =====
+    const NOTES_KEY = 'nabiNotesContent_v1';
+    function saveNotes() {
+      const data = {};
+      document.querySelectorAll('#viewNotes [data-notes]').forEach(el => {
+        data[el.getAttribute('data-notes')] = el.innerHTML;
+      });
+      try {
+        localStorage.setItem(NOTES_KEY, JSON.stringify(data));
+        showToast('已保存修改');
+      } catch (e) { showToast('保存失败'); }
+    }
+    function loadNotes() {
+      try {
+        const raw = localStorage.getItem(NOTES_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        Object.keys(data).forEach(k => {
+          const el = document.querySelector('#viewNotes [data-notes="' + k + '"]');
+          if (el) el.innerHTML = data[k];
+        });
+      } catch (e) {}
+    }
+
     // Initial render
+    loadNotes();
     render();
   </script>
 </body>

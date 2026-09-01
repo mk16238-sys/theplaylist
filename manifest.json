@@ -2,7 +2,7 @@
   "name": "Nabi 嘉年华 · 物料登记",
   "short_name": "Nabi 嘉年华",
   "description": "欧阳娜娜嘉年华演唱会现场物料领取登记与互换 Tips",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#DFDCCF",

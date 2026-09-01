@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Nabi 嘉年华">
-  <meta name="theme-color" content="#DFDCCF">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="图标.png">
-  <link rel="icon" type="image/png" href="图标.png">
+<html lang="zh-CN" data-page-node-id="48nlFwb4w07EGo9xpHHVxF">
+<head data-page-node-id="Nw28ZTEE1q3PVx9nJ8Hgai">
+  <meta charset="UTF-8" data-page-node-id="JRqCmbl6CgtvrbFDkZkQhc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" data-page-node-id="SdKftpcnvvzG3HYY8RuBCH">
+  <meta name="apple-mobile-web-app-capable" content="yes" data-page-node-id="0A8TG3sr4w1Nt9X38eXees">
+  <meta name="mobile-web-app-capable" content="yes" data-page-node-id="GqSEjrHDIoOhrTwKuAdM68">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" data-page-node-id="WuXItmRwUTaFhzi0ghUcmx">
+  <meta name="apple-mobile-web-app-title" content="Nabi 嘉年华" data-page-node-id="Hzd6DHT4J6P0dbSt9QFsdL">
+  <meta name="theme-color" content="#DFDCCF" data-page-node-id="XlNf4qZt1kvw45Z6XK3FvE">
+  <link rel="manifest" href="manifest.json" data-page-node-id="idCAKhBD91fe1zP3HBSWeA">
+  <link rel="apple-touch-icon" href="图标.png" data-page-node-id="4v5ldpMB5jJSyCdywYZb24">
+  <link rel="icon" type="image/png" href="图标.png" data-page-node-id="ak2SPFPUKD1mbFkAJHAaAe">
   <title>Nabi 嘉年华 · 物料登记</title>
   <script src="html2canvas.min.js"></script>
   <style>
@@ -621,36 +621,64 @@
       font-size: 12px;
     }
 
-    /* ootd horizontal layout (text left, image right) */
-    .ootd-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 14px;
+    /* OOTD 现场指南：三块卡片紧凑并排（不去切换单列） */
+    .ootd-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .ootd-card {
       background: var(--panel);
       border: 1.5px solid var(--line);
       border-radius: var(--radius);
-      padding: 14px 16px;
+      padding: 6px 12px 10px;
       box-shadow: var(--shadow);
-      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
-    .ootd-row .ootd-img {
-      width: 30%;
-      max-width: 90px;
-      flex: 0 0 30%;
-      border-radius: 12px;
-      display: block;
-      object-fit: cover;
+    .ootd-card .ootd-card-label {
+      display: inline-flex;
+      align-items: center;
+      align-self: flex-start;
+      background: var(--ink);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.3px;
+      line-height: 1.3;
+      margin-top: 2px;
     }
-    .ootd-row .ootd-text {
-      flex: 1 1 0;
-      min-width: 0;
-      text-align: left;
-      font-size: 14px;
-      line-height: 1.7;
+    .ootd-card .ootd-card-catch {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.4;
+      outline: none;
+      margin: 0;
+    }
+    .ootd-card .ootd-card-desc {
+      font-size: 12px;
+      line-height: 1.6;
       color: var(--muted);
+      outline: none;
     }
-    .ootd-row .ootd-text strong { color: var(--ink); font-size: 15px; }
+    .ootd-card .ootd-card-img {
+      width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      border-radius: 8px;
+      align-self: center;
+      background: transparent;
+      display: block;
+      margin-top: 2px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ootd-card.full { grid-column: 1 / -1; }
     .notes-footer {
       background: var(--ink);
       color: #fff;
@@ -692,107 +720,110 @@
     }
   </style>
 </head>
-<body>
+<body data-page-node-id="nTEENOCMFKYvfrQDO4A2FA">
 
   <!-- ===== Registration View ===== -->
-  <section class="view active" id="viewRegister">
-    <div class="app-header">
-      <img src="页面表头2.png" alt="The Playlist · Nana's Carnival" class="header-art">
+  <section class="view active" id="viewRegister" data-page-node-id="D14L9NYs1UkHIB7uBwvZDT">
+    <div class="app-header" data-page-node-id="gEoOmqERNG8ZDJFareX34S">
+      <img src="页面表头2.png" alt="The Playlist · Nana's Carnival" class="header-art" data-page-node-id="MwsTOa9VogitpYWzfAJIUs">
     </div>
 
-    <div class="register-panel">
-      <div class="container">
-        <div class="top-nav">
-          <button class="nav-btn" onclick="switchView('notes')">查看互换 Tips</button>
-          <div class="nav-spacer"></div>
-          <button class="nav-btn" onclick="openExportSheet()">生成长图</button>
-          <button class="nav-btn" onclick="openToolsMenu()">工具箱</button>
+    <div class="register-panel" data-page-node-id="fasL7bQrZfTNLweTfWmVWB">
+      <div class="container" data-page-node-id="BG9kAEogc9bL5kmsutE5AW">
+        <div class="top-nav" data-page-node-id="IEq42V7fe9MAGsI32LRhrx">
+          <button class="nav-btn" onclick="switchView('notes')" data-page-node-id="GhUaS8CSsSaMYDHPWmaOtH">查看互换 Tips</button>
+          <div class="nav-spacer" data-page-node-id="pK0QF4nCFg9cWBQJVn1b3h"></div>
+          <button class="nav-btn" onclick="openExportSheet()" data-page-node-id="miZzuNpjh7Ip7KLOodmuUO">生成长图</button>
+          <button class="nav-btn" onclick="openToolsMenu()" data-page-node-id="YC4dNFOPT3g5isheRbtvc3">工具箱</button>
         </div>
 
-        <div class="sticky-top">
-          <nav class="tabs" id="tabs"></nav>
-          <div class="search-box" style="margin: 4px 0 4px;">
-            <input type="text" id="searchInput" placeholder="搜索小红书ID…" oninput="renderRows()">
+        <div class="sticky-top" data-page-node-id="pycfu4aWmylsufwJNQVA3h">
+          <nav class="tabs" id="tabs" data-page-node-id="D3BHIq9kPf8zvBF7lPsTRl"></nav>
+          <div class="search-box" style="margin: 4px 0 4px;" data-page-node-id="npYZ7AR5yTQTQf13Z4VeUx">
+            <input type="text" id="searchInput" placeholder="搜索小红书ID…" oninput="renderRows()" data-page-node-id="zbExuXGvioVuzDUA34pEEH">
           </div>
-          <div class="stats" id="stats"></div>
+          <div class="stats" id="stats" data-page-node-id="79OIZCNF6qd4uh5U1PVc1j"></div>
         </div>
 
-        <div class="data-list" id="rows"></div>
+        <div class="data-list" id="rows" data-page-node-id="ulmtLjeg59ILv0dSFgBYrF"></div>
       </div>
     </div>
 
-    <button class="fab" onclick="openAddSheet()">+ 添加记录</button>
+    <button class="fab" onclick="openAddSheet()" data-page-node-id="7OlyZ9uMKCvBa9wQ17GSxU">+ 添加记录</button>
   </section>
 
   <!-- ===== Notes View ===== -->
-  <section class="view" id="viewNotes">
-    <div class="app-header" id="notesHeaderArt" style="padding: 12px 0 0;">
-      <img src="TIPS备份.png" alt="The Playlist · 互换物料 Tips" class="header-art" style="max-width: 720px;">
+  <section class="view" id="viewNotes" data-page-node-id="S3nYcy3daulyQBT3OhPI4K">
+    <div class="app-header" id="notesHeaderArt" style="padding: 12px 0 0;" data-page-node-id="49ck9BArL5wc95W71wfeOk">
+      <img src="TIPS备份.png" alt="The Playlist · 互换物料 Tips" class="header-art" style="max-width: 720px;" data-page-node-id="2meWq1LOv5eITdxhWCVpOX">
     </div>
 
-    <div class="top-nav" style="max-width: 520px; margin: 0 auto; padding: 10px 16px 0;">
-      <button class="nav-btn" onclick="switchView('register')">← 返回登记</button>
-      <div class="nav-spacer"></div>
-      <button class="nav-btn" onclick="saveNotes()">保存内容</button>
-      <button class="nav-btn primary" onclick="saveNotesAsImage()">生成长图</button>
+    <div class="top-nav" style="max-width: 520px; margin: 0 auto; padding: 10px 16px 0;" data-page-node-id="ZGGEAJ3zLsWYsvVY098ICE">
+      <button class="nav-btn" onclick="switchView('register')" data-page-node-id="nP7Z4ZK5Bs4Krp4ptXEgMm">← 返回登记</button>
+      <div class="nav-spacer" data-page-node-id="mrNx0gO8rAg5eSbE7lrDou"></div>
+      <button class="nav-btn" onclick="saveNotes()" data-page-node-id="uMa4ZjSCDL58w1IfYJIrsg">保存内容</button>
+      <button class="nav-btn primary" onclick="saveNotesAsImage()" data-page-node-id="7ka1yeQroda9zJoCtG0v0b">生成长图</button>
     </div>
 
-    <div class="notes-wrap" id="captureArea">
-      <h2 class="notes-h2" contenteditable="true" data-notes="matTitle">物料：</h2>
-      <div class="notes-materials">
-        <div class="notes-mat-card">
-          <img src="a5c834d328c619e7d25489a5145eaf36.jpg" alt="清凉油">
-          <span contenteditable="true" data-notes="mat0">清凉油</span>
+    <div class="notes-wrap" id="captureArea" data-page-node-id="5mT203vd5TFu4Y8Psl2rBj">
+      <h2 class="notes-h2" contenteditable="true" data-notes="matTitle" data-page-node-id="UTJHdKwfaBzcrZ0ibacZJr">物料：</h2>
+      <div class="notes-materials" data-page-node-id="YYJ4CmRnRDoKtvwHWRHhLg">
+        <div class="notes-mat-card" data-page-node-id="fipPp1mDFfvq2SBjYGZbyG">
+          <img src="a5c834d328c619e7d25489a5145eaf36.jpg" alt="清凉油" data-page-node-id="V9RLkljSWXeUrn0zMvBWZO">
+          <span contenteditable="true" data-notes="mat0" data-page-node-id="KLvTGDnp1WdK1U3GbyMUVu">清凉油</span>
         </div>
-        <div class="notes-mat-card">
-          <img src="打卡批.jpg" alt="打卡牌">
-          <span contenteditable="true" data-notes="mat1">打卡牌</span>
+        <div class="notes-mat-card" data-page-node-id="xg6EeQVeK2CQEWyuhWj4Aa">
+          <img src="打卡批.jpg" alt="打卡牌" data-page-node-id="4Ml1A8mJC1FCa3NdDvyxqR">
+          <span contenteditable="true" data-notes="mat1" data-page-node-id="EXSXB9W8ul0ENq7cxCpmVI">打卡牌</span>
         </div>
-        <div class="notes-mat-card">
-          <img src="冰箱贴.jpg" alt="冰箱贴">
-          <span contenteditable="true" data-notes="mat2">冰箱贴</span>
+        <div class="notes-mat-card" data-page-node-id="HoC08o3Q21QT2xptSUwBQi">
+          <img src="冰箱贴.jpg" alt="冰箱贴" data-page-node-id="qNOYWMCkk5zC8hvXi3VRZK">
+          <span contenteditable="true" data-notes="mat2" data-page-node-id="Buffx3LkrNW5g7SzPfejCN">冰箱贴</span>
         </div>
       </div>
 
-      <hr class="notes-divider">
+      <hr class="notes-divider" data-page-node-id="4SkyMUcGjuH3YkTkFlwqCb">
 
-      <h2 class="notes-h2" contenteditable="true" data-notes="ruleTitle">物料互换注意事项：</h2>
-      <ul class="notes-list">
-        <li>
-          <div class="title"><span class="num">1</span><span contenteditable="true" data-notes="r1Title">互换时间：16:30 开始</span></div>
-          <p contenteditable="true" data-notes="r1Desc">15:30 我开始入场进行周边采购，随身物品较多，该时间段不进行常规互换；路上偶遇识别出 ootd 可以例外进行交换。</p>
+      <h2 class="notes-h2" contenteditable="true" data-notes="ruleTitle" data-page-node-id="6DbUQtEaUn2cZJNEwuHnhM">物料互换注意事项：</h2>
+      <ul class="notes-list" data-page-node-id="FcpSW4yD6rbyjmbksBw52Q">
+        <li data-page-node-id="2A1YPDBXunSpO0cQTKKqUq">
+          <div class="title" data-page-node-id="4K7FHmGlbGeE3S2iyknNoT"><span class="num" data-page-node-id="GDzG0MI3L3RMbusgzGkfGb">1</span><span contenteditable="true" data-notes="r1Title" data-page-node-id="anABEJHsw195U93HbzJSZq">互换时间：16:30 开始</span></div>
+          <p contenteditable="true" data-notes="r1Desc" data-page-node-id="NEWrI9pEpmMZ1SuMvYdfkV">15:30 我开始入场进行周边采购，随身物品较多，该时间段不进行常规互换；路上偶遇识别出 ootd 可以例外进行交换。</p>
         </li>
       </ul>
 
-      <div class="loc-row">
-        <div class="loc-text">
-          <div class="title"><span class="num">2</span><span contenteditable="true" data-notes="r2Title">互换地点：集市中心雕塑</span></div>
-          <p contenteditable="true" data-notes="r2Desc">如果现场该地点人流过多，可能会临时更换地点，请随时查看群消息～</p>
+      <div class="loc-row" data-page-node-id="D2PAWff1BeY33CR8FbF0PC">
+        <div class="loc-text" data-page-node-id="why96dMpOlOlC7y0yz6mUu">
+          <div class="title" data-page-node-id="csF4ReYH3QLAr9CiHnoPie"><span class="num" data-page-node-id="u4JI3SeaeMzceo0KGWkWJ5">2</span><span contenteditable="true" data-notes="r2Title" data-page-node-id="rphlNjeO1gdjgXIYVP60gb">互换地点：集市中心雕塑</span></div>
+          <p contenteditable="true" data-notes="r2Desc" data-page-node-id="Gw5sK99hUedmP9EZUfEvd3">如果现场该地点人流过多，可能会临时更换地点，请随时查看群消息～</p>
         </div>
-        <div class="loc-img-wrap">
-          <img src="位图.png" alt="互换地点" class="loc-img">
-          <div class="loc-caption" contenteditable="true" data-notes="locCaption">正对嘉年华入口方向</div>
+        <div class="loc-img-wrap" data-page-node-id="oc6DJLBZVd31ipXIzaVKaq">
+          <img src="位图.png" alt="互换地点" class="loc-img" data-page-node-id="UYboH4XfG9n3CnW2zMiaTi">
+          <div class="loc-caption" contenteditable="true" data-notes="locCaption" data-page-node-id="0sNCHeZ1QjAp68TQ3A4nAD">正对嘉年华入口方向</div>
         </div>
       </div>
 
-      <ul class="notes-list">
-        <li>
-          <div class="title"><span class="num">3</span><span contenteditable="true" data-notes="r3Title">互换规则：见面请先提供小红书 ID</span></div>
-          <p contenteditable="true" data-notes="r3Desc">碰面请第一时间提供您的小红书 id，待我核对记录表后进行互换；没有告知 id 的情况下暂不进行互换。</p>
+      <ul class="notes-list" data-page-node-id="X18xabRagEwvAoWejz0tDM">
+        <li data-page-node-id="60NNMwnFNHwPPEUP11BLV2">
+          <div class="title" data-page-node-id="9T6vkqClaGaVLfwnc66VQs"><span class="num" data-page-node-id="pIM71elvxqs6FDH6sYmXIZ">3</span><span contenteditable="true" data-notes="r3Title" data-page-node-id="pkmS5CykpOGJbF1LlmLe0X">互换规则：见面请先提供小红书 ID</span></div>
+          <p contenteditable="true" data-notes="r3Desc" data-page-node-id="4EmcoIRWq0xFGf8m0Bc3R6">碰面请第一时间提供您的小红书 id，待我核对记录表后进行互换；没有告知 id 的情况下暂不进行互换。</p>
         </li>
       </ul>
 
-      <h2 class="notes-h2" contenteditable="true" data-notes="ootdTitle">当日OOTD</h2>
-      <div class="ootd-row">
-        <div class="ootd-text" contenteditable="true" data-notes="ootdText">
-          <strong>当日OOTD💪</strong><br>
-          <strong>Tips：</strong>如果现场人太多挤散，可以约定退场之后场外再互换；现场嘈杂听不清，可以简单打字沟通。遇到强行索要、纠缠的人，可以直接礼貌拒绝，不用不好意思。确认<br>
-          ① 一对一交换物料
+      <div class="ootd-grid" data-page-node-id="2QIh0gJZfF4ktDgBDGKs9k">
+        <div class="ootd-card" data-page-node-id="llKZBWzXWJw9Sc6hEnNdeI">
+          <span class="ootd-card-label" contenteditable="true" data-notes="ootd1Label" data-page-node-id="oPKjiKF99NAcMDfuCLI3en">当日OOTD ➜</span>
+          <div class="ootd-card-catch" contenteditable="true" data-notes="ootd1Catch" data-page-node-id="zeIA1IzyEcBVzDvgUYHDmK">欢迎现场抓我～</div>
+          <img src="编组.png" alt="ootd" class="ootd-card-img" data-page-node-id="MbE0xmqb9WZJQVrG1DHmow">
         </div>
-        <img src="编组.png" alt="ootd" class="ootd-img">
+        <div class="ootd-card" data-page-node-id="MTLepaDgRARcHYcuE1vJcS">
+          <span class="ootd-card-label" contenteditable="true" data-notes="ootd2Label" data-page-node-id="zqFCbNAMOv1WlPYNZTMDFC">love letter ➜</span>
+          <div class="ootd-card-catch" contenteditable="true" data-notes="ootd2Catch" data-page-node-id="Ufll3NuXs1SWsOzWTLZgK8">欢迎用love letter领鸡蛋</div>
+          <img id="loveletterImg" src="画框 7.png" alt="love letter" class="ootd-card-img" onclick="toggleLoveLetterImg()" data-page-node-id="TQkLKPvu0fRgalx6SVaj3a">
+        </div>
       </div>
 
-      <div class="notes-footer" contenteditable="true" data-notes="footer">
+      <div class="notes-footer" contenteditable="true" data-notes="footer" data-page-node-id="wEUg11vxXiNiSzyNMQuALL">
         请各位互换的宝宝提前将本图保存，方便现场互换顺利～
       </div>
     </div>
@@ -800,52 +831,52 @@
   </section>
 
   <!-- ===== Shared sheets / modals ===== -->
-  <div class="sheet-overlay" id="sheetOverlay" onclick="closeAddSheet()"></div>
-  <div class="sheet" id="sheet">
-    <h3 id="sheetTitle">添加记录</h3>
-    <label>小红书ID</label>
-    <input type="text" id="sheetId" placeholder="例如：欧阳娜娜最爱的33" autocomplete="off">
-    <label>互换物</label>
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeAddSheet()" data-page-node-id="Hga00GLJ9YpleXbkyAsSek"></div>
+  <div class="sheet" id="sheet" data-page-node-id="XA0uP2cU7fYDku1Z8HNEgY">
+    <h3 id="sheetTitle" data-page-node-id="UBDvVRrq79zOnnIZpWOeHW">添加记录</h3>
+    <label data-page-node-id="8eejQGaBl1zKRoTyCnBYKI">小红书ID</label>
+    <input type="text" id="sheetId" placeholder="例如：欧阳娜娜最爱的33" autocomplete="off" data-page-node-id="9VuutoxB8DBGfHbY3Bo8VE">
+    <label data-page-node-id="wxRkUh7FB8si6BljBTtD0Y">互换物</label>
     <input type="text" id="sheetExchange" placeholder="例如：记忆盒子" autocomplete="off"
-      onkeydown="if(event.key==='Enter'){confirmAddSheet()}">
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="closeAddSheet()">取消</button>
-      <button class="btn btn-primary" onclick="confirmAddSheet()">确认添加</button>
+      onkeydown="if(event.key==='Enter'){confirmAddSheet()}" data-page-node-id="IBb8UQFeFDudeEJ3UYP9LU">
+    <div class="btn-row" data-page-node-id="VL9N8UqOFo6ndm8c3QQzen">
+      <button class="btn btn-secondary" onclick="closeAddSheet()" data-page-node-id="GP1GlJrM9iHcK6NZqBOa1x">取消</button>
+      <button class="btn btn-primary" onclick="confirmAddSheet()" data-page-node-id="nA28nXNr17d3lgXBgpkJoc">确认添加</button>
     </div>
   </div>
 
-  <div class="sheet-overlay" id="exportSheetOverlay" onclick="closeExportSheet()"></div>
-  <div class="sheet" id="exportSheet">
-    <h3>生成长图</h3>
-    <div class="btn-row" style="flex-direction:column; gap:10px;">
-      <button class="btn btn-primary" onclick="closeExportSheet();captureCurrent();">当前表格长图</button>
-      <button class="btn btn-secondary" onclick="closeExportSheet();captureAll();">全部表格长图</button>
+  <div class="sheet-overlay" id="exportSheetOverlay" onclick="closeExportSheet()" data-page-node-id="HFNelkoKdyf5G947tXsGtH"></div>
+  <div class="sheet" id="exportSheet" data-page-node-id="KhBkGDgZtapPSmNTZYey4l">
+    <h3 data-page-node-id="kSzVU9dzsrRFDCGOKEDDNC">生成长图</h3>
+    <div class="btn-row" style="flex-direction:column; gap:10px;" data-page-node-id="tWI98y32S5r6KCew93YB9g">
+      <button class="btn btn-primary" onclick="closeExportSheet();captureCurrent();" data-page-node-id="qGH9BFSNQDJys2PFKAx0wH">当前表格长图</button>
+      <button class="btn btn-secondary" onclick="closeExportSheet();captureAll();" data-page-node-id="tHtpjsTGtv2yJCvCz4iVV1">全部表格长图</button>
     </div>
   </div>
 
-  <div class="sheet-overlay" id="deleteSheetOverlay" onclick="closeDeleteSheet()"></div>
-  <div class="sheet" id="deleteSheet">
-    <h3>确认删除</h3>
-    <p id="deleteSheetText" style="margin:0 0 10px; color:var(--muted);">是否删除这条记录？</p>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="closeDeleteSheet()">取消</button>
-      <button class="btn btn-danger" id="deleteSheetConfirm">删除</button>
+  <div class="sheet-overlay" id="deleteSheetOverlay" onclick="closeDeleteSheet()" data-page-node-id="iOArjEoidEumxvekQB142m"></div>
+  <div class="sheet" id="deleteSheet" data-page-node-id="XWmbetkAF8BXmbx9SUczGj">
+    <h3 data-page-node-id="sL1D2IZAkPF6pTaPHEvHsK">确认删除</h3>
+    <p id="deleteSheetText" style="margin:0 0 10px; color:var(--muted);" data-page-node-id="3q8mFTsETqQquyboIEaWkG">是否删除这条记录？</p>
+    <div class="btn-row" data-page-node-id="TjgQxSeaH4xbFWozbDNdIu">
+      <button class="btn btn-secondary" onclick="closeDeleteSheet()" data-page-node-id="nZ5oXkqMY5DBASSbv2nXmC">取消</button>
+      <button class="btn btn-danger" id="deleteSheetConfirm" data-page-node-id="DUDVudqFQ3pcuzVC90LozM">删除</button>
     </div>
   </div>
 
-  <div class="modal-overlay" id="modal" onclick="closeModalOnBackdrop(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <span id="modalTitle">操作</span>
-        <button class="close-x" onclick="closeModal()">×</button>
+  <div class="modal-overlay" id="modal" onclick="closeModalOnBackdrop(event)" data-page-node-id="DTWAHuCOTEKRF89MbKooKZ">
+    <div class="modal" onclick="event.stopPropagation()" data-page-node-id="FiqCsYeDAgChVUK0iLxB95">
+      <div class="modal-header" data-page-node-id="EruLzvSpkiMogrL2TmjrNJ">
+        <span id="modalTitle" data-page-node-id="kmj3XgIGUbzhGKB4XxGgNa">操作</span>
+        <button class="close-x" onclick="closeModal()" data-page-node-id="VVmHfwluIfv9jGpA1IVHsg">×</button>
       </div>
-      <div class="modal-body" id="modalBody"></div>
-      <div class="modal-footer" id="modalFooter"></div>
+      <div class="modal-body" id="modalBody" data-page-node-id="lELDXmqpo9Jx70wSld6tlm"></div>
+      <div class="modal-footer" id="modalFooter" data-page-node-id="RJbGKWRCHk2xSrG4MyP8Jl"></div>
     </div>
   </div>
 
-  <div id="exportHidden" class="hidden-export"></div>
-  <div class="toast" id="toast"></div>
+  <div id="exportHidden" class="hidden-export" data-page-node-id="cH5sfO2MjLH8iLmKcXMdBd"></div>
+  <div class="toast" id="toast" data-page-node-id="QMGfcZ0zEAK0b0IkeGZ4ww"></div>
 
   <script>
     // ================= View switching =================
@@ -1488,7 +1519,50 @@
       el.style.padding = '0 16px';
       wrap.appendChild(el);
 
-      captureToImage(wrap, 'Nabi嘉年华_互换物料Tips.png');
+      // ⚠️ 关键：等所有 <img> 加载完成再截图，否则 html2canvas 会丢失原始尺寸。
+      const imgs = Array.from(wrap.querySelectorAll('img'));
+      const waits = imgs.map(img => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise(res => { img.onload = img.onerror = res; });
+      });
+
+      Promise.all(waits).then(() => {
+        // ⚠️ 关键：html2canvas 不一定遵守 `object-fit:contain`，
+        // 这里显式按原图比例算出目标尺寸，并写到 cloned DOM 上，避免拉伸。
+        // wrap 总宽 520，captureArea 横内 padding 16 → 内容宽 488，grid gap 10
+        const maxH = 180;
+        const cardW = (488 - 10) / 2; // 每张卡片的可用宽度
+        wrap.querySelectorAll('.ootd-card-img').forEach(img => {
+          const nw = img.naturalWidth, nh = img.naturalHeight;
+          let w, h;
+          if (nw > 0 && nh > 0) {
+            const ratio = nw / nh;
+            // 在 (cardW x maxH) 的盒子里按原比例 contain
+            h = maxH;
+            w = h * ratio;
+            if (w > cardW) {
+              w = cardW;
+              h = w / ratio;
+            }
+          } else {
+            w = cardW;
+            h = maxH;
+          }
+          const W = Math.round(w), H = Math.round(h);
+          img.setAttribute('width', W);
+          img.setAttribute('height', H);
+          img.style.width = W + 'px';
+          img.style.height = H + 'px';
+          img.style.maxWidth = '100%';
+          img.style.maxHeight = maxH + 'px';
+          img.style.objectFit = 'contain';
+          img.style.display = 'block';
+          img.style.margin = '2px auto 0';
+          img.style.alignSelf = 'center';
+        });
+
+        captureToImage(wrap, 'Nabi嘉年华_互换物料Tips.png');
+      });
     }
 
     // ===== Utilities =====
@@ -1529,6 +1603,16 @@
           if (el) el.innerHTML = data[k];
         });
       } catch (e) {}
+    }
+
+    // ===== Love letter image toggle (click to switch between two egg-box photos) =====
+    function toggleLoveLetterImg() {
+      const img = document.getElementById('loveletterImg');
+      if (!img) return;
+      const cur = img.getAttribute('src');
+      if (cur === '画框 7.png') img.src = '画框 7备份.png';
+      else if (cur === '画框 7备份.png') img.src = '画框 7.png';
+      else img.src = '画框 7.png';
     }
 
     // Initial render
